@@ -111,7 +111,7 @@ public class ShowoffItem implements Listener
                 {
                     for (int z = 0; z < 16; z++)
                     {
-                        for (int y = 0; y < 256; y++)
+                        for (int y = chunk.getWorld().getMinHeight(); y < chunk.getWorld().getMaxHeight(); y++)
                         {
                             if (config.isShopBlock(chunkSnapshot.getBlockType(x, y, z)))
                             {
