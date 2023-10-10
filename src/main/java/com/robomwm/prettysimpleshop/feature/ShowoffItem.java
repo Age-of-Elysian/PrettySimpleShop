@@ -9,9 +9,9 @@ import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
 import org.bukkit.Chunk;
-import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.block.DoubleChest;
@@ -36,11 +36,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -99,53 +98,21 @@ public class ShowoffItem implements Listener
     {
         if (!cache.contains(getChunkName(chunk)))
             return;
-        final ChunkSnapshot chunkSnapshot = chunk.getChunkSnapshot();
-        new BukkitRunnable()
+        Collection<BlockState> snapshot = chunk.getTileEntities(block -> config.isShopBlock(block.getType()), false);
+        boolean noShops = true;
+        for (BlockState state : snapshot)
         {
-            @Override
-            public void run()
-            {
-
-                Set<Location> blocksToCheck = new HashSet<>();
-                for (int x = 0; x < 16; x++)
-                {
-                    for (int z = 0; z < 16; z++)
-                    {
-                        for (int y = chunk.getWorld().getMinHeight(); y < chunk.getWorld().getMaxHeight(); y++)
-                        {
-                            if (config.isShopBlock(chunkSnapshot.getBlockType(x, y, z)))
-                            {
-                                blocksToCheck.add(new Location(chunk.getWorld(), x + (chunk.getX() * 16), y, z + (chunk.getZ() * 16)));
-                            }
-                        }
-                    }
-                }
-
-                new BukkitRunnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        boolean noShops = true;
-                        for (Location location : blocksToCheck)
-                        {
-                            if (!location.getWorld().isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4))
-                                return;
-                            Container container = shopAPI.getContainer(location);
-                            if (container == null || !shopAPI.isShop(container, false))
-                                continue;
-                            ItemStack item = shopAPI.getItemStack(container);
-                            if (item == null)
-                                continue;
-                            if (spawnItem(new ShopInfo(shopAPI.getLocation(container), item, plugin.getShopAPI().getPrice(container))))
-                                noShops = false; //Shops exist in this chunk
-                        }
-                        if (noShops)
-                            removeCachedChunk(chunk);
-                    }
-                }.runTask(plugin);
-            }
-        }.runTaskAsynchronously(plugin);
+            Container container = shopAPI.getContainer(state.getLocation());
+            if (container == null || !shopAPI.isShop(container, false))
+                continue;
+            ItemStack item = shopAPI.getItemStack(container);
+            if (item == null)
+                continue;
+            if (spawnItem(new ShopInfo(shopAPI.getLocation(container), item, plugin.getShopAPI().getPrice(container))))
+                noShops = false; //Shops exist in this chunk
+        }
+        if (noShops)
+            removeCachedChunk(chunk);
     }
 
     @EventHandler(ignoreCancelled = true)
