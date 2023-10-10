@@ -159,7 +159,7 @@ public class ShowoffItem implements Listener
         while (locations.hasNext()) //can optimize later via mapping chunks if needed
         {
             Location location = locations.next();
-            if (location.getChunk() == event.getChunk())
+            if (Chunk.getChunkKey(location) == event.getChunk().getChunkKey())
             {
                 Item item = spawnedItems.get(location);
                 item.remove();
