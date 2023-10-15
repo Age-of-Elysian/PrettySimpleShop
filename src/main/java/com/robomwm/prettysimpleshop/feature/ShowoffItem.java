@@ -117,8 +117,6 @@ public class ShowoffItem implements Listener {
             InventoryHolder holder = ((Container) event.getBlock().getState()).getInventory().getHolder();
 
             if (holder instanceof DoubleChest doubleChest) {
-                Bukkit.broadcastMessage("test " + ((event.getBlock().getState() instanceof DoubleChest)));
-
                 despawnItem(((Chest) (doubleChest.getLeftSide())).getLocation().add(0.5, 1.25, 0.5));
                 despawnItem(((Chest) (doubleChest.getRightSide())).getLocation().add(0.5, 1.25, 0.5));
             }
