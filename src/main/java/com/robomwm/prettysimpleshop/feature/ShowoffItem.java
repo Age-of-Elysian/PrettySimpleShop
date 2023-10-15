@@ -116,8 +116,8 @@ public class ShowoffItem implements Listener {
                 InventoryHolder holder = ((Container) event.getBlock().getState()).getInventory().getHolder();
 
                 if (holder instanceof DoubleChest doubleChest) {
-                    despawnItem(((Chest) (doubleChest.getLeftSide())).getLocation().toCenterLocation());
-                    despawnItem(((Chest) (doubleChest.getRightSide())).getLocation().toCenterLocation());
+                    despawnItem(((Chest) (doubleChest.getLeftSide())).getLocation().add(0.5, 1.25, 0.5));
+                    despawnItem(((Chest) (doubleChest.getRightSide())).getLocation().add(0.5, 1.25, 0.5));
                 }
             }
         }.runTask(plugin);
@@ -147,11 +147,11 @@ public class ShowoffItem implements Listener {
 
     @EventHandler
     private void onShopBreak(ShopBreakEvent event) {
-        despawnItem(event.getShopInfo().getLocation().toCenterLocation());
+        despawnItem(event.getShopInfo().getLocation().add(0.5, 1.25, 0.5));
     }
 
     private boolean spawnItem(ShopInfo shopInfo) {
-        Location location = shopInfo.getLocation().toCenterLocation();
+        Location location = shopInfo.getLocation().add(0.5, 1.25, 0.5);
         ItemStack itemStack = shopInfo.getItem();
         despawnItem(location);
         if (itemStack == null)
@@ -162,12 +162,6 @@ public class ShowoffItem implements Listener {
             displayItem.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GROUND);
             displayItem.setItemStack(itemStack);
             displayItem.setBillboard(Display.Billboard.VERTICAL);
-            displayItem.setTransformation(new Transformation(
-                    new Vector3f(0f, 0.75f, 0f),
-                    new AxisAngle4f(0f, 0f, 0f, 1f),
-                    new Vector3f(1f, 1f, 1f),
-                    new AxisAngle4f(0f, 0f, 0f, 1f)
-            ));
             displayItem.setPersistent(false);
         });
 
@@ -176,7 +170,7 @@ public class ShowoffItem implements Listener {
                 displayText.setText(PrettySimpleShop.getItemName(itemStack));
                 displayText.setBillboard(Display.Billboard.VERTICAL);
                 displayText.setTransformation(new Transformation(
-                        new Vector3f(0f, 1.15f, 0f),
+                        new Vector3f(0f, 0.45f, 0f),
                         new AxisAngle4f(0f, 0f, 0f, 1f),
                         new Vector3f(0.5f, 0.5f, 0.5f),
                         new AxisAngle4f(0f, 0f, 0f, 1f)
