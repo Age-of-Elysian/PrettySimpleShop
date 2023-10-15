@@ -1,5 +1,6 @@
 package com.robomwm.prettysimpleshop.feature;
 
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.robomwm.prettysimpleshop.ConfigManager;
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
 import com.robomwm.prettysimpleshop.event.ShopBoughtEvent;
@@ -8,6 +9,7 @@ import com.robomwm.prettysimpleshop.event.ShopOpenCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -16,49 +18,42 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
+import org.bukkit.entity.Display;
+import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.entity.ItemDespawnEvent;
-import org.bukkit.event.inventory.InventoryPickupItemEvent;
-import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.block.InventoryBlockStartEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
+import org.bukkit.util.Transformation;
+import org.joml.AxisAngle4f;
+import org.joml.Vector3f;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created on 2/9/2018.
  *
  * @author RoboMWM
  */
-public class ShowoffItem implements Listener
-{
+public class ShowoffItem implements Listener {
     private PrettySimpleShop plugin;
     private ShopAPI shopAPI;
     private YamlConfiguration cache;
     private File cacheFile;
-    private Map<Location, Item> spawnedItems = new HashMap<>();
+    private Set<ItemDisplay> spawnedItems = new HashSet<>();
     private ConfigManager config;
     private boolean showItemName;
 
-    public ShowoffItem(PrettySimpleShop plugin, ShopAPI shopAPI, boolean showItemName)
-    {
+    public ShowoffItem(PrettySimpleShop plugin, ShopAPI shopAPI, boolean showItemName) {
         this.plugin = plugin;
         config = plugin.getConfigManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -71,21 +66,16 @@ public class ShowoffItem implements Listener
                 loadShopItemsInChunk(chunk);
     }
 
-    private void saveCache()
-    {
-        try
-        {
+    private void saveCache() {
+        try {
             cache.save(cacheFile);
-        }
-        catch (Throwable rock)
-        {
+        } catch (Throwable rock) {
             plugin.getLogger().warning("Unable to save cache file: " + rock.getMessage());
         }
     }
 
     @EventHandler
-    private void onChunkLoad(ChunkLoadEvent event)
-    {
+    private void onChunkLoad(ChunkLoadEvent event) {
         if (!config.isWhitelistedWorld(event.getWorld()))
             return;
         final Chunk chunk = event.getChunk();
@@ -94,14 +84,12 @@ public class ShowoffItem implements Listener
         loadShopItemsInChunk(chunk);
     }
 
-    private void loadShopItemsInChunk(Chunk chunk)
-    {
+    private void loadShopItemsInChunk(Chunk chunk) {
         if (!cache.contains(getChunkName(chunk)))
             return;
         Collection<BlockState> snapshot = chunk.getTileEntities(block -> config.isShopBlock(block.getType()), false);
         boolean noShops = true;
-        for (BlockState state : snapshot)
-        {
+        for (BlockState state : snapshot) {
             Container container = shopAPI.getContainer(state.getLocation());
             if (container == null || !shopAPI.isShop(container, false))
                 continue;
@@ -115,168 +103,133 @@ public class ShowoffItem implements Listener
             removeCachedChunk(chunk);
     }
 
-    @EventHandler(ignoreCancelled = true)
-    private void onChunkUnload(ChunkUnloadEvent event)
-    {
-        if (!config.isWhitelistedWorld(event.getWorld()))
-            return;
-
-        //Remove showcased items for shops that are about to be unloaded
-        Iterator<Location> locations = spawnedItems.keySet().iterator();
-        while (locations.hasNext()) //can optimize later via mapping chunks if needed
-        {
-            Location location = locations.next();
-            if (Chunk.getChunkKey(location) == event.getChunk().getChunkKey())
-            {
-                Item item = spawnedItems.get(location);
-                item.remove();
-                item.removeMetadata("NO_PICKUP", plugin);
-                locations.remove();
-            }
-        }
-
-        //Cleanup dropped items that may have been moved away from the chunk they spawned at
-        for (Entity entity : event.getChunk().getEntities())
-        {
-            if (entity.getType() == EntityType.DROPPED_ITEM && entity.hasMetadata("NO_PICKUP")) {
-                entity.remove();
-                entity.removeMetadata("NO_PICKUP", plugin);
-            }
-        }
-    }
-
     //despawn items when a shop chest becomes a doublechest
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
-    private void onDoubleChest(BlockPlaceEvent event)
-    {
+    private void onDoubleChest(BlockPlaceEvent event) {
         if (!config.isWhitelistedWorld(event.getBlock().getWorld()))
             return;
         if (!config.isShopBlock(event.getBlock().getType()))
             return;
-        new BukkitRunnable()
-        {
+        new BukkitRunnable() {
             @Override
-            public void run()
-            {
-                InventoryHolder holder = ((Container)event.getBlock().getState()).getInventory().getHolder();
-                if (!(holder instanceof DoubleChest))
-                    return;
-                DoubleChest doubleChest = (DoubleChest)holder;
-                despawnItem(((Chest)(doubleChest.getLeftSide())).getLocation().add(0.5, 1.2, 0.5));
-                despawnItem(((Chest)(doubleChest.getLeftSide())).getLocation().add(0.5, 1.2, 0.5));
+            public void run() {
+                InventoryHolder holder = ((Container) event.getBlock().getState()).getInventory().getHolder();
+
+                if (holder instanceof DoubleChest doubleChest) {
+                    despawnItem(((Chest) (doubleChest.getLeftSide())).getLocation().toCenterLocation());
+                    despawnItem(((Chest) (doubleChest.getRightSide())).getLocation().toCenterLocation());
+                }
             }
         }.runTask(plugin);
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
-    private void onPickup(EntityPickupItemEvent event)
-    {
-        if (!config.isWhitelistedWorld(event.getItem().getLocation().getWorld()))
-            return;
-        event.setCancelled(event.getItem().hasMetadata("NO_PICKUP"));
-    }
-    @EventHandler(ignoreCancelled = true)
-    private void onHopperPickup(InventoryPickupItemEvent event)
-    {
-        if (event.getInventory().getType() == InventoryType.HOPPER)
-            event.setCancelled(event.getItem().hasMetadata("NO_PICKUP"));
+    @EventHandler
+    public void onDespawn(EntityRemoveFromWorldEvent event) {
+        if (event.getEntity() instanceof ItemDisplay itemDisplay) {
+            spawnedItems.remove(itemDisplay);
+        }
     }
 
     @EventHandler
-    private void onShopBought(ShopBoughtEvent event)
-    {
-        spawnItem(event.getShopInfo());
-    }
-    @EventHandler
-    private void onShopSelect(ShopSelectEvent event)
-    {
-        spawnItem(event.getShopInfo());
-    }
-    @EventHandler
-    private void onShopOpen(ShopOpenCloseEvent event)
-    {
+    private void onShopBought(ShopBoughtEvent event) {
         spawnItem(event.getShopInfo());
     }
 
     @EventHandler
-    private void onShopBreak(ShopBreakEvent event)
-    {
-        despawnItem(event.getShopInfo().getLocation().add(0.5, 1.2, 0.5));
-    }
-    @EventHandler
-    private void onItemDespawn(ItemDespawnEvent event)
-    {
-        if (event.getEntity().hasMetadata("NO_PICKUP"))
-            event.setCancelled(true);
+    private void onShopSelect(ShopSelectEvent event) {
+        spawnItem(event.getShopInfo());
     }
 
-    private boolean spawnItem(ShopInfo shopInfo)
-    {
-        Location location = shopInfo.getLocation().add(0.5, 1.2, 0.5);
+    @EventHandler
+    private void onShopOpen(ShopOpenCloseEvent event) {
+        spawnItem(event.getShopInfo());
+    }
+
+    @EventHandler
+    private void onShopBreak(ShopBreakEvent event) {
+        despawnItem(event.getShopInfo().getLocation().toCenterLocation());
+    }
+
+    private boolean spawnItem(ShopInfo shopInfo) {
+        Location location = shopInfo.getLocation().toCenterLocation();
         ItemStack itemStack = shopInfo.getItem();
         despawnItem(location);
         if (itemStack == null)
             return false;
         itemStack.setAmount(1);
-        itemStack.getItemMeta().setDisplayName(String.valueOf(ThreadLocalRandom.current().nextInt())); //Prevents merging (idea from SCS) though metadata might be sufficient? Though we could also just use the ItemMergeEvent too but this is probably simpler and more performant.
-        Item item = location.getWorld().dropItem(location, itemStack);
-        item.setPickupDelay(Integer.MAX_VALUE);
-        if (showItemName)
-        {
-            String name = PrettySimpleShop.getItemName(itemStack); //TODO: make configurable
-            item.setCustomName(name);
-            item.setCustomNameVisible(true);
+
+        var item = location.getWorld().spawn(location, ItemDisplay.class, displayItem -> {
+            displayItem.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GROUND);
+            displayItem.setItemStack(itemStack);
+            displayItem.setBillboard(Display.Billboard.VERTICAL);
+            displayItem.setTransformation(new Transformation(
+                    new Vector3f(0f, 0.75f, 0f),
+                    new AxisAngle4f(0f, 0f, 0f, 1f),
+                    new Vector3f(1f, 1f, 1f),
+                    new AxisAngle4f(0f, 0f, 0f, 1f)
+            ));
+            displayItem.setPersistent(false);
+        });
+
+        if (showItemName) {
+            var text = location.getWorld().spawn(location, TextDisplay.class, displayText -> {
+                displayText.setText(PrettySimpleShop.getItemName(itemStack));
+                displayText.setBillboard(Display.Billboard.VERTICAL);
+                displayText.setTransformation(new Transformation(
+                        new Vector3f(0f, 1.15f, 0f),
+                        new AxisAngle4f(0f, 0f, 0f, 1f),
+                        new Vector3f(0.5f, 0.5f, 0.5f),
+                        new AxisAngle4f(0f, 0f, 0f, 1f)
+                ));
+                displayText.setLineWidth(75);
+                displayText.setPersistent(false);
+            });
+
+            item.addPassenger(text);
         }
-        item.setVelocity(new Vector(0, 0.01, 0));
-        item.setMetadata("NO_PICKUP", new FixedMetadataValue(plugin, this));
-        spawnedItems.put(location, item);
+
+        spawnedItems.add(item);
+
         cacheChunk(location.getChunk());
-        try //spigot compat (switch to Paper!)
-        {
-            item.setCanMobPickup(false);
-        }
-        catch (Throwable rock){}
+
         return true;
     }
 
-    //Modifies Map as well, hence why it's not used in chunkUnloadEvent when we iterate through locations.
-    private void despawnItem(Location location)
-    {
+    private void despawnItem(Location location) {
         PrettySimpleShop.debug("Checking for item at " + location);
-        if (spawnedItems.containsKey(location))
-        {
-            Item item = spawnedItems.remove(location);
-            item.remove();
-            item.removeMetadata("NO_PICKUP", plugin);
+
+        for (var itemDisplay : location.getNearbyEntitiesByType(ItemDisplay.class, 0.001f)) {
+            for (var textDisplay : itemDisplay.getPassengers()) {
+                textDisplay.remove();
+            }
+
+            itemDisplay.remove();
+
             PrettySimpleShop.debug("removed item at " + location);
         }
     }
 
-    private void cacheChunk(Chunk chunk)
-    {
+    private void cacheChunk(Chunk chunk) {
         if (cache.contains(getChunkName(chunk)))
             return;
         cache.set(getChunkName(chunk), true);
         saveCache();
     }
 
-    private void removeCachedChunk(Chunk chunk)
-    {
+    private void removeCachedChunk(Chunk chunk) {
         cache.set(getChunkName(chunk), null);
         saveCache();
     }
 
-    private String getChunkName(Chunk chunk)
-    {
+    private String getChunkName(Chunk chunk) {
         return chunk.getWorld().getName() + chunk.getX() + "," + chunk.getZ();
     }
 
-    public void despawnAll()
-    {
-        for (Item item : spawnedItems.values()) {
-            item.remove();
-            item.removeMetadata("NO_PICKUP", plugin);
+    public void despawnAll() {
+        for (var itemDisplay : spawnedItems) {
+            despawnItem(itemDisplay.getLocation());
         }
+
         spawnedItems.clear();
     }
 }

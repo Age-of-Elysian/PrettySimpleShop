@@ -2,20 +2,13 @@ package com.robomwm.prettysimpleshop.shop;
 
 import com.robomwm.prettysimpleshop.ConfigManager;
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Nameable;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
-import org.bukkit.block.Container;
-import org.bukkit.block.DoubleChest;
+import org.bukkit.block.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.List;
 
 /**
  * Created on 2/6/2018.
