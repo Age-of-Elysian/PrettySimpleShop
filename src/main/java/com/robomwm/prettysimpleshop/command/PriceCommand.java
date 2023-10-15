@@ -11,39 +11,32 @@ import org.bukkit.entity.Player;
  *
  * @author RoboMWM
  */
-public class PriceCommand implements CommandExecutor
-{
-    private ShopListener shopListener;
+public class PriceCommand implements CommandExecutor {
+    private final ShopListener shopListener;
 
-    public PriceCommand(ShopListener shopListener)
-    {
+    public PriceCommand(ShopListener shopListener) {
         this.shopListener = shopListener;
     }
 
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
-    {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player))
             return false;
-        if (args.length < 1)
-        {
-            shopListener.priceCommand((Player)sender, null);
+        if (args.length < 1) {
+            shopListener.priceCommand((Player) sender, null);
             return false;
         }
 
         double price;
 
-        try
-        {
-            price = Double.valueOf(args[0]);
+        try {
+            price = Double.parseDouble(args[0]);
             price = Math.floor(price * 100) / 100;
-        }
-        catch (Throwable rock)
-        {
-            shopListener.priceCommand((Player)sender, null);
+        } catch (Throwable rock) {
+            shopListener.priceCommand((Player) sender, null);
             return false;
         }
 
-        shopListener.priceCommand((Player)sender, price);
+        shopListener.priceCommand((Player) sender, price);
         return true;
     }
 }

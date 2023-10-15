@@ -10,24 +10,24 @@ import org.bukkit.event.HandlerList;
  *
  * @author RoboMWM
  */
-public class ShopSelectEvent extends Event
-{
+public class ShopSelectEvent extends Event {
     // Custom Event Requirements
     private static final HandlerList handlers = new HandlerList();
+
     public static HandlerList getHandlerList() {
         return handlers;
     }
+
     @Override
     public HandlerList getHandlers() {
         return handlers;
     }
 
-    private Player player;
-    private ShopInfo shopInfo;
-    private boolean intentToBuy;
+    private final Player player;
+    private final ShopInfo shopInfo;
+    private final boolean intentToBuy;
 
-    public ShopSelectEvent(Player player, ShopInfo shopInfo, boolean intentToBuy)
-    {
+    public ShopSelectEvent(Player player, ShopInfo shopInfo, boolean intentToBuy) {
         this.player = player;
         this.shopInfo = shopInfo;
         this.intentToBuy = intentToBuy;
@@ -36,18 +36,15 @@ public class ShopSelectEvent extends Event
     /**
      * @return whether the player's selection indicates an interest to buy
      */
-    public boolean hasIntentToBuy()
-    {
+    public boolean hasIntentToBuy() {
         return intentToBuy;
     }
 
-    public Player getPlayer()
-    {
+    public Player getPlayer() {
         return player;
     }
 
-    public ShopInfo getShopInfo()
-    {
+    public ShopInfo getShopInfo() {
         return shopInfo;
     }
 }

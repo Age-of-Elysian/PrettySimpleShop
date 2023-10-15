@@ -15,15 +15,12 @@ import java.util.List;
  *
  * @author RoboMWM
  */
-public class LazyUtil
-{
-    public static TextComponent getClickableCommand(String message, String command)
-    {
+public class LazyUtil {
+    public static TextComponent getClickableCommand(String message, String command) {
         return getClickableCommand(message, command, command);
     }
 
-    public static TextComponent getClickableCommand(String message, String command, String hover)
-    {
+    public static TextComponent getClickableCommand(String message, String command, String hover) {
         TextComponent textComponent = new TextComponent(message);
         textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
         if (hover != null)
@@ -31,8 +28,7 @@ public class LazyUtil
         return textComponent;
     }
 
-    public static TextComponent getClickableSuggestion(String message, String suggestion, String hover)
-    {
+    public static TextComponent getClickableSuggestion(String message, String suggestion, String hover) {
         TextComponent textComponent = new TextComponent(message);
         textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggestion));
         if (hover != null)
@@ -40,21 +36,18 @@ public class LazyUtil
         return textComponent;
     }
 
-    public static BaseComponent[] buildPage(Object... strings)
-    {
+    public static BaseComponent[] buildPage(Object... strings) {
         List<BaseComponent> baseComponents = new ArrayList<>(strings.length);
-        for (Object object : strings)
-        {
+        for (Object object : strings) {
             if (object instanceof BaseComponent)
-                baseComponents.add((BaseComponent)object);
+                baseComponents.add((BaseComponent) object);
             else if (object instanceof String)
-                baseComponents.addAll(Arrays.asList(TextComponent.fromLegacyText((String)object)));
+                baseComponents.addAll(Arrays.asList(TextComponent.fromLegacyText((String) object)));
         }
         return baseComponents.toArray(new BaseComponent[0]);
     }
 
-    public static List<BaseComponent> addLegacyText(String string, List<BaseComponent> baseComponents)
-    {
+    public static List<BaseComponent> addLegacyText(String string, List<BaseComponent> baseComponents) {
         Collections.addAll(baseComponents, TextComponent.fromLegacyText(string));
         return baseComponents;
     }

@@ -9,7 +9,6 @@ import com.robomwm.prettysimpleshop.event.ShopOpenCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -25,7 +24,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.block.InventoryBlockStartEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -45,13 +43,13 @@ import java.util.Set;
  * @author RoboMWM
  */
 public class ShowoffItem implements Listener {
-    private PrettySimpleShop plugin;
-    private ShopAPI shopAPI;
-    private YamlConfiguration cache;
-    private File cacheFile;
-    private Set<ItemDisplay> spawnedItems = new HashSet<>();
-    private ConfigManager config;
-    private boolean showItemName;
+    private final PrettySimpleShop plugin;
+    private final ShopAPI shopAPI;
+    private final YamlConfiguration cache;
+    private final File cacheFile;
+    private final Set<ItemDisplay> spawnedItems = new HashSet<>();
+    private final ConfigManager config;
+    private final boolean showItemName;
 
     public ShowoffItem(PrettySimpleShop plugin, ShopAPI shopAPI, boolean showItemName) {
         this.plugin = plugin;

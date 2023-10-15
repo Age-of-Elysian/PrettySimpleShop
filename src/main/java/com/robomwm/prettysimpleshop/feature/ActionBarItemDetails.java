@@ -3,22 +3,13 @@ package com.robomwm.prettysimpleshop.feature;
 import com.robomwm.prettysimpleshop.ConfigManager;
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
 import com.robomwm.prettysimpleshop.shop.ShopAPI;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
-
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
 
 
 /**
@@ -26,46 +17,25 @@ import java.util.Queue;
  *
  * @author RoboMWM
  */
-public class ActionBarItemDetails implements Listener
-{
-    private Plugin plugin;
-    private ShopAPI shopAPI;
-    private ConfigManager config;
-    private Economy economy;
+public class ActionBarItemDetails implements Listener {
+    private final ShopAPI shopAPI;
+    private final ConfigManager config;
+    private final Economy economy;
 
-    public ActionBarItemDetails(PrettySimpleShop plugin, ShopAPI shopAPI, Economy economy)
-    {
-        try
-        {
-            Player.Spigot test;
-        }
-        catch (Throwable rock)
-        {
-            plugin.getLogger().warning("The showItemDetailsInActionBar feature requires at least spigot or paper.");
-            return;
-        }
-
-        this.plugin = plugin;
+    public ActionBarItemDetails(PrettySimpleShop plugin, ShopAPI shopAPI, Economy economy) {
         config = plugin.getConfigManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.shopAPI = shopAPI;
         this.economy = economy;
 
-        new BukkitRunnable()
-        {
-            @Override
-            public void run()
-            {
-                for (Player player : plugin.getServer().getOnlinePlayers())
-                {
-                    sendShopDetails(player);
-                }
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                sendShopDetails(player);
             }
-        }.runTaskTimer(plugin, 5L, 5L);
+        }, 5L, 5L);
     }
 
-    public boolean sendShopDetails(Player player)
-    {
+    public boolean sendShopDetails(Player player) {
         if (!config.isWhitelistedWorld(player.getWorld()))
             return false;
 
@@ -74,7 +44,7 @@ public class ActionBarItemDetails implements Listener
         if (!shopAPI.isShop(block, false))
             return false;
 
-        Container shopBlock = (Container)block.getState();
+        Container shopBlock = (Container) block.getState();
 
         ItemStack item = shopAPI.getItemStack(shopBlock);
 
@@ -82,8 +52,8 @@ public class ActionBarItemDetails implements Listener
             return false;
 
         String textToSend = config.getString("saleInfo", PrettySimpleShop.getItemName(item), economy.format(shopAPI.getPrice(shopBlock)), Integer.toString(item.getAmount()));
+        player.sendActionBar(textToSend);
 
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(textToSend));
         return true;
     }
 }

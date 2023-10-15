@@ -9,12 +9,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 
 /**
@@ -22,21 +17,19 @@ import java.util.regex.Matcher;
  *
  * @author RoboMWM
  */
-public class ConfigManager
-{
-    private JavaPlugin instance;
-    private FileConfiguration config;
-    private boolean debug;
+public class ConfigManager {
+    private final JavaPlugin instance;
+    private final FileConfiguration config;
+    private final boolean debug;
     private ConfigurationSection showOffItemsFeatureSection;
     private ConfigurationSection messageSection;
     private ConfigurationSection tipSection;
-    private Set<World> whitelistedWorlds = new HashSet<>();
-    private Set<Material> shopBlocks = new HashSet<>();
+    private final Set<World> whitelistedWorlds = new HashSet<>();
+    private final Set<Material> shopBlocks = new HashSet<>();
 
-    private Map<Player, String> lastSeenTip = new HashMap<>();
+    private final Map<Player, String> lastSeenTip = new HashMap<>();
 
-    public ConfigManager(JavaPlugin plugin)
-    {
+    public ConfigManager(JavaPlugin plugin) {
         instance = plugin;
         config = instance.getConfig();
 
@@ -110,10 +103,8 @@ public class ConfigManager
         instance.saveConfig();
         debug = config.getBoolean("debug", false);
 
-        if (config.getBoolean("useWorldWhitelist"))
-        {
-            for (String worldName : config.getStringList("worldWhitelist"))
-            {
+        if (config.getBoolean("useWorldWhitelist")) {
+            for (String worldName : config.getStringList("worldWhitelist")) {
                 World world = instance.getServer().getWorld(worldName);
                 if (world == null)
                     instance.getLogger().warning("World " + worldName + " does not exist.");
@@ -122,8 +113,7 @@ public class ConfigManager
             }
         }
 
-        for (String blockName : config.getStringList("shopBlocks"))
-        {
+        for (String blockName : config.getStringList("shopBlocks")) {
             Material material = Material.matchMaterial(blockName);
             if (material == null)
                 instance.getLogger().warning(blockName + " is not a valid Material name.");
@@ -150,18 +140,15 @@ public class ConfigManager
         instance.saveConfig();
     }
 
-    public boolean getBoolean(String key)
-    {
+    public boolean getBoolean(String key) {
         return config.getBoolean(key);
     }
 
-    public boolean isDebug()
-    {
+    public boolean isDebug() {
         return debug;
     }
 
-    public void sendTip(Player player, String key)
-    {
+    public void sendTip(Player player, String key) {
         if (lastSeenTip.containsKey(player) && lastSeenTip.get(player).equals(key))
             return;
         lastSeenTip.put(player, key);
@@ -171,27 +158,23 @@ public class ConfigManager
         player.sendMessage(message);
     }
 
-    public void sendMessage(CommandSender player, String key)
-    {
+    public void sendMessage(CommandSender player, String key) {
         String message = getString(key);
         if (!message.isEmpty())
             player.sendMessage(message);
     }
 
-    public void sendMessage(CommandSender player, String key, String... formatees)
-    {
+    public void sendMessage(CommandSender player, String key, String... formatees) {
         String message = getString(key, formatees);
         if (!message.isEmpty())
             player.sendMessage(message);
     }
 
-    public String getString(String key, String... formatees)
-    {
+    public String getString(String key, String... formatees) {
         return formatter(messageSection.getString(key), formatees);
     }
 
-    public String getString(String key)
-    {
+    public String getString(String key) {
         return formatter(messageSection.getString(key));
     }
 
@@ -200,29 +183,24 @@ public class ConfigManager
         return whitelistedWorlds.isEmpty() || whitelistedWorlds.contains(world);
     }
 
-    public boolean isShopBlock(Material material)
-    {
+    public boolean isShopBlock(Material material) {
         return shopBlocks.contains(material);
     }
 
     /*Utility methods*/
-    private String formatter(String stringToFormat, String... formatees)
-    {
+    private String formatter(String stringToFormat, String... formatees) {
         return formatter(argParser(stringToFormat, formatees));
     }
 
-    private String formatter(String stringToFormat)
-    {
+    private String formatter(String stringToFormat) {
         return ChatColor.translateAlternateColorCodes('&', stringToFormat);
     }
 
     //String.format or whatever it was does weird stuff and doesn't like certain characters in the string when parsing {0} stuff so yea...
 
-    private String argParser(String stringToFill, String... args)
-    {
+    private String argParser(String stringToFill, String... args) {
         int i = 0;
-        for (String arg : args)
-        {
+        for (String arg : args) {
             stringToFill = stringToFill.replaceAll("\\{" + i + "}", Matcher.quoteReplacement(arg));
             i++;
         }

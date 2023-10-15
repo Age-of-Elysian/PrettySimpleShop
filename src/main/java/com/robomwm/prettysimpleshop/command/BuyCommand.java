@@ -31,16 +31,14 @@ import java.util.Map;
  *
  * @author RoboMWM
  */
-public class BuyCommand implements CommandExecutor, Listener
-{
-    private ShopListener shopListener;
-    private ConfigManager config;
-    private ShopAPI shopAPI;
-    private Economy economy;
-    private Map<Player, UnconfirmedTransaction> unconfirmedTransactionMap = new HashMap<>();
+public class BuyCommand implements CommandExecutor, Listener {
+    private final ShopListener shopListener;
+    private final ConfigManager config;
+    private final ShopAPI shopAPI;
+    private final Economy economy;
+    private final Map<Player, UnconfirmedTransaction> unconfirmedTransactionMap = new HashMap<>();
 
-    public BuyCommand(PrettySimpleShop plugin, ShopListener shopListener, Economy economy)
-    {
+    public BuyCommand(PrettySimpleShop plugin, ShopListener shopListener, Economy economy) {
         this.shopListener = shopListener;
         this.config = plugin.getConfigManager();
         this.shopAPI = plugin.getShopAPI();
@@ -48,28 +46,22 @@ public class BuyCommand implements CommandExecutor, Listener
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
-    {
-        if (!(sender instanceof Player) || args.length < 1)
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!(sender instanceof Player player) || args.length < 1)
             return false;
-        Player player = (Player)sender;
 
         if (args.length == 4) //Selecting a shop via clicking
         {
             World world = player.getServer().getWorld(args[0]);
-            if (world == null || player.getWorld() != world)
-            {
+            if (world == null || player.getWorld() != world) {
                 config.sendMessage(player, "tooFar");
                 return false;
             }
             Location location;
 
-            try
-            {
+            try {
                 location = new Location(world, Double.parseDouble(args[1]), Double.parseDouble(args[2]), Double.parseDouble(args[3]));
-            }
-            catch (Throwable rock)
-            {
+            } catch (Throwable rock) {
                 return false;
             }
 
@@ -78,8 +70,7 @@ public class BuyCommand implements CommandExecutor, Listener
             return true;
         }
 
-        if (args[0].equalsIgnoreCase("cancel"))
-        {
+        if (args[0].equalsIgnoreCase("cancel")) {
             unconfirmedTransactionMap.remove(player);
             config.sendMessage(player, "transactionCanceled");
             return true;
@@ -87,12 +78,9 @@ public class BuyCommand implements CommandExecutor, Listener
 
         int quantity;
 
-        try
-        {
+        try {
             quantity = Integer.parseInt(args[0]);
-        }
-        catch (Throwable rock)
-        {
+        } catch (Throwable rock) {
             return false;
         }
 
@@ -100,23 +88,19 @@ public class BuyCommand implements CommandExecutor, Listener
         return true;
     }
 
-    public boolean buyCommand(Player player, int amount, boolean confirm)
-    {
+    public boolean buyCommand(Player player, int amount, boolean confirm) {
         ShopInfo shopInfo = shopListener.getSelectedShop(player);
-        if (shopInfo == null)
-        {
+        if (shopInfo == null) {
             config.sendMessage(player, "noShopSelected");
             return false;
         }
 
-        if (shopInfo.getPrice() < 0)
-        {
+        if (shopInfo.getPrice() < 0) {
             config.sendMessage(player, "noPrice");
             return false;
         }
 
-        if (economy.getBalance(player) < amount * shopInfo.getPrice())
-        {
+        if (economy.getBalance(player) < amount * shopInfo.getPrice()) {
             config.sendMessage(player, "noMoney");
             return false;
         }
@@ -124,16 +108,13 @@ public class BuyCommand implements CommandExecutor, Listener
         ItemStack itemStack = shopInfo.getItem();
         itemStack.setAmount(amount);
 
-        if (!hasInventorySpace(player, itemStack))
-        {
+        if (!hasInventorySpace(player, itemStack)) {
             config.sendMessage(player, "noSpace");
         }
 
-        if (config.getBoolean("confirmTransactions"))
-        {
+        if (config.getBoolean("confirmTransactions")) {
             if (!confirm && (!unconfirmedTransactionMap.containsKey(player)
-                    || !unconfirmedTransactionMap.remove(player).matches(shopInfo, amount)))
-            {
+                    || !unconfirmedTransactionMap.remove(player).matches(shopInfo, amount))) {
                 unconfirmedTransactionMap.put(player, new UnconfirmedTransaction(player, shopInfo, amount, config, economy));
                 return true;
             }
@@ -141,8 +122,7 @@ public class BuyCommand implements CommandExecutor, Listener
         }
 
         itemStack = shopAPI.performTransaction(shopAPI.getContainer(shopInfo.getLocation()), itemStack, shopInfo.getPrice());
-        if (itemStack == null)
-        {
+        if (itemStack == null) {
             config.sendMessage(player, "shopModified");
             return false;
         }
@@ -181,12 +161,10 @@ public class BuyCommand implements CommandExecutor, Listener
 
     //Drop items not taken from the "collection window"
     @EventHandler
-    private void onCloseShopInventory(InventoryCloseEvent event)
-    {
+    private void onCloseShopInventory(InventoryCloseEvent event) {
         if (!(event.getInventory().getHolder() instanceof ShopInventoryHolder))
             return;
-        for (ItemStack itemStack : event.getInventory())
-        {
+        for (ItemStack itemStack : event.getInventory()) {
             if (itemStack == null)
                 continue;
             event.getPlayer().getLocation().getWorld().dropItemNaturally(event.getPlayer().getLocation(), itemStack);
@@ -207,20 +185,18 @@ public class BuyCommand implements CommandExecutor, Listener
     }
 }
 
-class UnconfirmedTransaction
-{
-    private ShopInfo shopInfo;
-    private int amount;
+class UnconfirmedTransaction {
+    private final ShopInfo shopInfo;
+    private final int amount;
 
-    UnconfirmedTransaction(Player player, ShopInfo shopInfo, int amount, ConfigManager config, Economy economy)
-    {
+    UnconfirmedTransaction(Player player, ShopInfo shopInfo, int amount, ConfigManager config, Economy economy) {
         this.shopInfo = shopInfo;
         this.amount = amount;
         ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
-        BookMeta bookMeta = (BookMeta)book.getItemMeta();
-        bookMeta.spigot().addPage(LazyUtil.buildPage(Integer.toString(amount) + " " , shopInfo.getHoverableText(),
+        BookMeta bookMeta = (BookMeta) book.getItemMeta();
+        bookMeta.spigot().addPage(LazyUtil.buildPage(amount + " ", shopInfo.getItemName(),
                 "\n\n", config.getString("TotalCost", economy.format(amount * shopInfo.getPrice())),
-                "\n\n", config.getString("currentBalanceAndCost", economy.format(economy.getBalance(player)), economy.format( economy.getBalance(player) - amount * shopInfo.getPrice())),
+                "\n\n", config.getString("currentBalanceAndCost", economy.format(economy.getBalance(player)), economy.format(economy.getBalance(player) - amount * shopInfo.getPrice())),
                 "\n\n", LazyUtil.getClickableCommand(config.getString("Confirm"), config.getString("buyCommandForConfirmationBook") + " " + amount + " confirm"),
                 " ", LazyUtil.getClickableCommand(config.getString("Cancel"), config.getString("buyCommandForConfirmationBook") + " cancel")));
 
@@ -231,24 +207,20 @@ class UnconfirmedTransaction
         player.openBook(book);
     }
 
-    public boolean matches(ShopInfo shopInfo, int amount)
-    {
+    public boolean matches(ShopInfo shopInfo, int amount) {
         return this.shopInfo.equals(shopInfo) && this.amount == amount;
     }
 }
 
-class ShopInventoryHolder implements InventoryHolder
-{
+class ShopInventoryHolder implements InventoryHolder {
     private Inventory inventory;
 
-    public void setInventory(Inventory inventory)
-    {
+    public void setInventory(Inventory inventory) {
         this.inventory = inventory;
     }
 
     @Override
-    public Inventory getInventory()
-    {
+    public Inventory getInventory() {
         return inventory;
     }
 }

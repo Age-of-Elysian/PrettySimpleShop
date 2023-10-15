@@ -1,6 +1,5 @@
 package com.robomwm.prettysimpleshop.event;
 
-import com.robomwm.prettysimpleshop.shop.ShopInfo;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -11,41 +10,38 @@ import org.bukkit.event.HandlerList;
  *
  * @author RoboMWM
  */
-public class ShopPricedEvent extends Event
-{
+public class ShopPricedEvent extends Event {
     // Custom Event Requirements
     private static final HandlerList handlers = new HandlerList();
+
     public static HandlerList getHandlerList() {
         return handlers;
     }
+
     @Override
     public HandlerList getHandlers() {
         return handlers;
     }
 
-    private Player player;
-    private Location location;
-    private double newPrice;
+    private final Player player;
+    private final Location location;
+    private final double newPrice;
 
-    public ShopPricedEvent(Player player, Location location, double newPrice)
-    {
+    public ShopPricedEvent(Player player, Location location, double newPrice) {
         this.player = player;
         this.location = location;
         this.newPrice = newPrice;
     }
 
-    public Player getPlayer()
-    {
+    public Player getPlayer() {
         return player;
     }
 
-    public Location getLocation()
-    {
+    public Location getLocation() {
         return location;
     }
 
-    public double getNewPrice()
-    {
+    public double getNewPrice() {
         return newPrice;
     }
 }

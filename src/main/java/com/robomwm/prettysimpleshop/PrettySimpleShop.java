@@ -23,56 +23,45 @@ import java.util.concurrent.Callable;
  *
  * @author RoboMWM
  */
-public class PrettySimpleShop extends JavaPlugin
-{
+public class PrettySimpleShop extends JavaPlugin {
     private Economy economy;
     private static boolean debug;
     private ShopAPI shopAPI;
     private ConfigManager config;
     private ShowoffItem showoffItem = null;
 
-    public void onEnable()
-    {
+    public void onEnable() {
         config = new ConfigManager(this);
         debug = config.isDebug();
         shopAPI = new ShopAPI(config.getString("shopName"), config.getString("price"), config.getString("sales"), config);
-        try
-        {
+        try {
             Metrics metrics = new Metrics(this, 3383);
-            metrics.addCustomChart(new Metrics.SimplePie("bukkit_implementation", new Callable<String>()
-            {
+            metrics.addCustomChart(new Metrics.SimplePie("bukkit_implementation", new Callable<String>() {
                 @Override
-                public String call() throws Exception
-                {
+                public String call() throws Exception {
                     return getServer().getVersion().split("-")[1];
                 }
             }));
 
-            for (final String key : getConfig().getKeys(false))
-            {
+            for (final String key : getConfig().getKeys(false)) {
                 if (!getConfig().isBoolean(key) && !getConfig().isInt(key) && !getConfig().isString(key))
                     continue;
-                metrics.addCustomChart(new Metrics.SimplePie(key.toLowerCase(), new Callable<String>()
-                {
+                metrics.addCustomChart(new Metrics.SimplePie(key.toLowerCase(), new Callable<String>() {
                     @Override
-                    public String call() throws Exception
-                    {
+                    public String call() throws Exception {
                         return getConfig().getString(key);
                     }
                 }));
             }
+        } catch (Throwable ignored) {
         }
-        catch (Throwable ignored) {}
 
         PrettySimpleShop plugin = this;
-        new BukkitRunnable()
-        {
+        new BukkitRunnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 economy = getEconomy();
-                if (economy == null)
-                {
+                if (economy == null) {
                     getLogger().severe("No economy plugin was found. Disabling.");
                     getServer().getPluginManager().disablePlugin(plugin);
                     return;
@@ -93,44 +82,35 @@ public class PrettySimpleShop extends JavaPlugin
         }.runTask(this);
     }
 
-    public void onDisable()
-    {
+    public void onDisable() {
         if (showoffItem != null)
             showoffItem.despawnAll();
     }
 
-    public static String getItemName(ItemStack item)
-    {
+    public static String getItemName(ItemStack item) {
         if (item.hasItemMeta() && item.getItemMeta().hasDisplayName())
             return item.getItemMeta().getDisplayName();
-        try
-        {
+        try {
             return item.getI18NDisplayName();
-        }
-        catch (Throwable rock)
-        {
+        } catch (Throwable rock) {
             return item.getType().name().toLowerCase().replaceAll("_", " ");
         }
     }
 
-    public ShopAPI getShopAPI()
-    {
+    public ShopAPI getShopAPI() {
         return shopAPI;
     }
 
-    public ConfigManager getConfigManager()
-    {
+    public ConfigManager getConfigManager() {
         return config;
     }
 
-    public static void debug(Object message)
-    {
+    public static void debug(Object message) {
         if (debug)
             System.out.println("[PrettySimpleShop debug] " + message);
     }
 
-    private Economy getEconomy()
-    {
+    private Economy getEconomy() {
         if (economy != null)
             return economy;
         if (getServer().getPluginManager().getPlugin("Vault") == null) {

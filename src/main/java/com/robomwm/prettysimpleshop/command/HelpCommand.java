@@ -11,15 +11,14 @@ import org.bukkit.command.CommandSender;
  *
  * @author RoboMWM
  */
-public class HelpCommand implements CommandExecutor
-{
-    private PrettySimpleShop plugin;
-    public HelpCommand(PrettySimpleShop plugin)
-    {
+public class HelpCommand implements CommandExecutor {
+    private final PrettySimpleShop plugin;
+
+    public HelpCommand(PrettySimpleShop plugin) {
         this.plugin = plugin;
     }
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
-    {
+
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         sender.sendMessage(ChatColor.LIGHT_PURPLE + "PrettySimpleShop version " + plugin.getDescription().getVersion() + " by " + ChatColor.RED + "RoboMWM");
         plugin.getConfigManager().sendMessage(sender, "shopCommand");
         return true;

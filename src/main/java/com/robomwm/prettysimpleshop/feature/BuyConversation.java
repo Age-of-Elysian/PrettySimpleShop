@@ -19,28 +19,25 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created on 3/13/2018.
- *
+ * <p>
  * I was gonna do something like an assistant or cashier or something
  * but that's all too ambiguous so here's a generic name
  *
  * @author RoboMWM
  */
-public class BuyConversation implements Listener
-{
-    private ConfigManager configManager;
-    private JavaPlugin plugin;
-    private Set<Player> buyPrompt = ConcurrentHashMap.newKeySet(); //thread safe????????
+public class BuyConversation implements Listener {
+    private final ConfigManager configManager;
+    private final JavaPlugin plugin;
+    private final Set<Player> buyPrompt = ConcurrentHashMap.newKeySet(); //thread safe????????
 
-    public BuyConversation(PrettySimpleShop plugin)
-    {
+    public BuyConversation(PrettySimpleShop plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.configManager = plugin.getConfigManager();
     }
 
     @EventHandler(ignoreCancelled = true)
-    private void onShopSelectWithIntent(ShopSelectEvent event)
-    {
+    private void onShopSelectWithIntent(ShopSelectEvent event) {
         Player player = event.getPlayer();
         buyPrompt.remove(player);
         if (!event.hasIntentToBuy())
@@ -50,42 +47,37 @@ public class BuyConversation implements Listener
     }
 
     @EventHandler(ignoreCancelled = true)
-    private void onCommand(PlayerCommandPreprocessEvent event)
-    {
+    private void onCommand(PlayerCommandPreprocessEvent event) {
         buyPrompt.remove(event.getPlayer());
     }
+
     @EventHandler
-    private void onQuit(PlayerQuitEvent event)
-    {
+    private void onQuit(PlayerQuitEvent event) {
         buyPrompt.remove(event.getPlayer());
     }
+
     @EventHandler
-    private void onChangeWorlds(PlayerChangedWorldEvent event)
-    {
+    private void onChangeWorlds(PlayerChangedWorldEvent event) {
         buyPrompt.remove(event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    private void onChat(AsyncPlayerChatEvent event)
-    {
+    private void onChat(AsyncPlayerChatEvent event) {
         if (!buyPrompt.remove(event.getPlayer()))
             return;
-        try
-        {
+        try {
             int amount = Integer.parseInt(event.getMessage());
             if (amount <= 0)
                 return;
             event.setCancelled(true);
-            new BukkitRunnable()
-            {
+            new BukkitRunnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     event.getPlayer().performCommand("buy " + amount); //TODO: call directly
                 }
             }.runTask(plugin);
+        } catch (Throwable ignored) {
         }
-        catch (Throwable ignored){}
     }
 }
 
