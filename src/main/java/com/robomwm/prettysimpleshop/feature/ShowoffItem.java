@@ -9,6 +9,7 @@ import com.robomwm.prettysimpleshop.event.ShopOpenCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -43,13 +44,13 @@ import java.util.Set;
  * @author RoboMWM
  */
 public class ShowoffItem implements Listener {
-    private final PrettySimpleShop plugin;
-    private final ShopAPI shopAPI;
-    private final YamlConfiguration cache;
-    private final File cacheFile;
-    private final Set<ItemDisplay> spawnedItems = new HashSet<>();
-    private final ConfigManager config;
-    private final boolean showItemName;
+    private PrettySimpleShop plugin;
+    private ShopAPI shopAPI;
+    private YamlConfiguration cache;
+    private File cacheFile;
+    private Set<ItemDisplay> spawnedItems = new HashSet<>();
+    private ConfigManager config;
+    private boolean showItemName;
 
     public ShowoffItem(PrettySimpleShop plugin, ShopAPI shopAPI, boolean showItemName) {
         this.plugin = plugin;
@@ -104,21 +105,24 @@ public class ShowoffItem implements Listener {
     //despawn items when a shop chest becomes a doublechest
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     private void onDoubleChest(BlockPlaceEvent event) {
-        if (!config.isWhitelistedWorld(event.getBlock().getWorld()))
+        if (!config.isWhitelistedWorld(event.getBlock().getWorld())) {
             return;
-        if (!config.isShopBlock(event.getBlock().getType()))
-            return;
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                InventoryHolder holder = ((Container) event.getBlock().getState()).getInventory().getHolder();
+        }
 
-                if (holder instanceof DoubleChest doubleChest) {
-                    despawnItem(((Chest) (doubleChest.getLeftSide())).getLocation().add(0.5, 1.25, 0.5));
-                    despawnItem(((Chest) (doubleChest.getRightSide())).getLocation().add(0.5, 1.25, 0.5));
-                }
+        if (!config.isShopBlock(event.getBlock().getType())) {
+            return;
+        }
+
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            InventoryHolder holder = ((Container) event.getBlock().getState()).getInventory().getHolder();
+
+            if (holder instanceof DoubleChest doubleChest) {
+                Bukkit.broadcastMessage("test " + ((event.getBlock().getState() instanceof DoubleChest)));
+
+                despawnItem(((Chest) (doubleChest.getLeftSide())).getLocation().add(0.5, 1.25, 0.5));
+                despawnItem(((Chest) (doubleChest.getRightSide())).getLocation().add(0.5, 1.25, 0.5));
             }
-        }.runTask(plugin);
+        });
     }
 
     @EventHandler
@@ -165,7 +169,7 @@ public class ShowoffItem implements Listener {
 
         if (showItemName) {
             var text = location.getWorld().spawn(location, TextDisplay.class, displayText -> {
-                displayText.setText(PrettySimpleShop.getItemName(itemStack));
+                displayText.text(PrettySimpleShop.getItemName(itemStack));
                 displayText.setBillboard(Display.Billboard.VERTICAL);
                 displayText.setTransformation(new Transformation(
                         new Vector3f(0f, 0.45f, 0f),

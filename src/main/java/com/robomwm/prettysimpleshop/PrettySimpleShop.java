@@ -9,6 +9,7 @@ import com.robomwm.prettysimpleshop.feature.DestroyShopOnBreak;
 import com.robomwm.prettysimpleshop.feature.ShowoffItem;
 import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopListener;
+import net.kyori.adventure.text.Component;
 import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.inventory.ItemStack;
@@ -87,14 +88,16 @@ public class PrettySimpleShop extends JavaPlugin {
             showoffItem.despawnAll();
     }
 
-    public static String getItemName(ItemStack item) {
-        if (item.hasItemMeta() && item.getItemMeta().hasDisplayName())
-            return item.getItemMeta().getDisplayName();
-        try {
-            return item.getI18NDisplayName();
-        } catch (Throwable rock) {
-            return item.getType().name().toLowerCase().replaceAll("_", " ");
+    public static Component getItemName(ItemStack item) {
+        if (item.hasItemMeta()) {
+            var meta = item.getItemMeta();
+
+            if (meta.hasDisplayName()) {
+                return meta.displayName();
+            }
         }
+
+        return Component.translatable(item.translationKey());
     }
 
     public ShopAPI getShopAPI() {

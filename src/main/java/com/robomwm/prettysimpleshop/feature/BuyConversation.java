@@ -3,6 +3,7 @@ package com.robomwm.prettysimpleshop.feature;
 import com.robomwm.prettysimpleshop.ConfigManager;
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -42,7 +43,7 @@ public class BuyConversation implements Listener {
         buyPrompt.remove(player);
         if (!event.hasIntentToBuy())
             return;
-        configManager.sendMessage(player, "buyPrompt", event.getShopInfo().getItemName());
+        configManager.sendMessage(player, "buyPrompt", LegacyComponentSerializer.legacySection().serialize(event.getShopInfo().getItemName()));
         buyPrompt.add(player);
     }
 

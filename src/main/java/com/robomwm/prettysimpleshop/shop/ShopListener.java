@@ -6,10 +6,10 @@ import com.robomwm.prettysimpleshop.event.ShopOpenCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopPricedEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -23,6 +23,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -100,10 +101,12 @@ public class ShopListener implements Listener {
             priceCommand(event.getPlayer(), null);
             return;
         }
-        if (event.getAction() == Action.PHYSICAL)
+        if (event.getAction() == Action.PHYSICAL) {
             return;
-        if (event.getClickedBlock() != null && config.isShopBlock(event.getClickedBlock().getType()))
+        }
+        if (event.getClickedBlock() != null && config.isShopBlock(event.getClickedBlock().getType())) {
             return;
+        }
         priceCommand(event.getPlayer(), null);
     }
 
@@ -125,7 +128,6 @@ public class ShopListener implements Listener {
 
         if (item == null) {
             config.sendMessage(player, "noStock");
-            config.sendTip(player, "noStock");
             return true;
         }
 
@@ -138,7 +140,7 @@ public class ShopListener implements Listener {
         // TODO: send message
 
         config.sendTip(player, "saleInfo");
-        instance.getServer().getPluginManager().callEvent(shopSelectEvent);
+        Bukkit.getPluginManager().callEvent(shopSelectEvent);
         return true;
     }
 
@@ -149,46 +151,41 @@ public class ShopListener implements Listener {
     //Collect revenues
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     private void onOpenInventory(InventoryOpenEvent event) {
-        if (event.getPlayer().getType() != EntityType.PLAYER)
-            return;
-        //Try needed because of a spigot bug which throwes a NullPointerException
-        try {
-            if (event.getInventory().getLocation() == null)
-                return;
-        } catch (NullPointerException e) {
-            instance.getLogger().warning("A NPE was thrown when attempting to retireve the inventory's location. This is a bug that must be reported and fixed in the server software.\nI.e. This is a Spigot bug. See https://github.com/MLG-Fortress/PrettySimpleShop/pull/7 for more details.");
-            e.printStackTrace();
-            instance.getLogger().warning("A NPE was thrown when attempting to retireve the inventory's location. This is a bug that must be reported and fixed in the server software.\nI.e. This is a Spigot bug. See https://github.com/MLG-Fortress/PrettySimpleShop/pull/7 for more details.");
+        if (!(event.getPlayer() instanceof Player player)) {
             return;
         }
-        Player player = (Player) event.getPlayer();
-        Container container = shopAPI.getContainer(event.getInventory().getLocation());
-        if (container == null)
+
+        if (event.getInventory().getLocation() == null) {
             return;
-//        if (!shopAPI.isShop(container))
-//        {
-//            if (priceSetter.remove(player) != null)
-//                config.sendMessage(player, "setPriceCanceled");
-//            return;
-//        }
+        }
+
+        Container container = shopAPI.getContainer(event.getInventory().getLocation());
+
+        if (container == null) {
+            return;
+        }
 
         if (priceSetter.containsKey(player)) {
             double newPrice = priceSetter.remove(player);
             shopAPI.setPrice(container, newPrice);
             config.sendMessage(player, "priceApplied", economy.format(newPrice));
-            instance.getServer().getPluginManager().callEvent(new ShopPricedEvent(player, container.getLocation(), newPrice));
+            Bukkit.getPluginManager().callEvent(new ShopPricedEvent(player, container.getLocation(), newPrice));
         }
 
-        if (!shopAPI.isShop(container))
+        if (!shopAPI.isShop(container)) {
             return;
+        }
 
-        instance.getServer().getPluginManager().callEvent(new ShopOpenCloseEvent(player, new ShopInfo(shopAPI.getLocation(container), shopAPI.getItemStack(container), shopAPI.getPrice(container)), true));
+        Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, new ShopInfo(shopAPI.getLocation(container), shopAPI.getItemStack(container), shopAPI.getPrice(container)), true));
 
-        double deposit = shopAPI.getRevenue(container, true);
-        if (deposit <= 0)
+        double revenue = shopAPI.getRevenue(container, true);
+
+        if (revenue <= 0) {
             return;
-        economy.depositPlayer(player, deposit);
-        config.sendMessage(player, "collectRevenue", economy.format(deposit));
+        }
+
+        economy.depositPlayer(player, revenue);
+        config.sendMessage(player, "collectRevenue", economy.format(revenue));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
@@ -199,37 +196,30 @@ public class ShopListener implements Listener {
         Container container = (Container) block.getState();
         if (!shopAPI.isShop(container))
             return;
-        instance.getServer().getPluginManager().callEvent(new ShopBreakEvent(event.getPlayer(), new ShopInfo(shopAPI.getLocation(container), shopAPI.getItemStack(container), shopAPI.getPrice(container)), event));
-        double deposit = shopAPI.getRevenue(container, true);
-        if (deposit <= 0)
+        Bukkit.getPluginManager().callEvent(new ShopBreakEvent(event.getPlayer(), new ShopInfo(shopAPI.getLocation(container), shopAPI.getItemStack(container), shopAPI.getPrice(container)), event));
+        double revenue = shopAPI.getRevenue(container, true);
+        if (revenue <= 0)
             return;
         Player player = event.getPlayer();
-        economy.depositPlayer(player, deposit);
-        config.sendMessage(player, "collectRevenue", economy.format(deposit));
+        economy.depositPlayer(player, revenue);
+        config.sendMessage(player, "collectRevenue", economy.format(revenue));
     }
 
     //Purely for calling the dumb event
     @EventHandler(ignoreCancelled = true)
     private void onClose(InventoryCloseEvent event) {
-        if (event.getPlayer().getType() != EntityType.PLAYER)
-            return;
-
-        try {
-            if (event.getInventory().getLocation() == null)
-                return;
-        } catch (NullPointerException e) {
-            instance.getLogger().warning("A NPE was thrown when attempting to retireve the inventory's location. This is a bug that must be reported and fixed in the server software.\nI.e. This is a Spigot bug. See https://github.com/MLG-Fortress/PrettySimpleShop/pull/7 for more details.");
-            e.printStackTrace();
-            instance.getLogger().warning("A NPE was thrown when attempting to retireve the inventory's location. This is a bug that must be reported and fixed in the server software.\nI.e. This is a Spigot bug. See https://github.com/MLG-Fortress/PrettySimpleShop/pull/7 for more details.");
+        if (!(event.getPlayer() instanceof Player player)) {
             return;
         }
-        Player player = (Player) event.getPlayer();
-        Container container = shopAPI.getContainer(event.getInventory().getLocation());
-        if (container == null)
+
+        if (!(event.getInventory().getHolder() instanceof Container container)) {
             return;
+        }
+
         if (!shopAPI.isShop(container))
             return;
-        instance.getServer().getPluginManager().callEvent(new ShopOpenCloseEvent(player, new ShopInfo(shopAPI.getLocation(container), shopAPI.getItemStack(container), shopAPI.getPrice(container)), false));
+
+        Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, new ShopInfo(shopAPI.getLocation(container), shopAPI.getItemStack(container), shopAPI.getPrice(container)), false));
     }
 
     //For now we'll just prevent explosions. Might consider dropping stored revenue on explosion later.

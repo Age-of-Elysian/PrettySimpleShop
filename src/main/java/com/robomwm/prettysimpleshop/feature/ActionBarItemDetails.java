@@ -3,6 +3,7 @@ package com.robomwm.prettysimpleshop.feature;
 import com.robomwm.prettysimpleshop.ConfigManager;
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
 import com.robomwm.prettysimpleshop.shop.ShopAPI;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -51,7 +52,7 @@ public class ActionBarItemDetails implements Listener {
         if (item == null)
             return false;
 
-        String textToSend = config.getString("saleInfo", PrettySimpleShop.getItemName(item), economy.format(shopAPI.getPrice(shopBlock)), Integer.toString(item.getAmount()));
+        String textToSend = config.getString("saleInfo", LegacyComponentSerializer.legacySection().serialize(PrettySimpleShop.getItemName(item)), economy.format(shopAPI.getPrice(shopBlock)), Integer.toString(item.getAmount()));
         player.sendActionBar(textToSend);
 
         return true;

@@ -7,6 +7,7 @@ import com.robomwm.prettysimpleshop.event.ShopBoughtEvent;
 import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
 import com.robomwm.prettysimpleshop.shop.ShopListener;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -47,8 +48,9 @@ public class BuyCommand implements CommandExecutor, Listener {
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player) || args.length < 1)
+        if (!(sender instanceof Player player) || args.length < 1) {
             return false;
+        }
 
         if (args.length == 4) //Selecting a shop via clicking
         {
@@ -129,7 +131,7 @@ public class BuyCommand implements CommandExecutor, Listener {
 
         economy.withdrawPlayer(player, itemStack.getAmount() * shopInfo.getPrice());
 
-        config.sendMessage(player, "transactionCompleted", Integer.toString(itemStack.getAmount()), PrettySimpleShop.getItemName(itemStack), economy.format(itemStack.getAmount() * shopInfo.getPrice()));
+        config.sendMessage(player, "transactionCompleted", Integer.toString(itemStack.getAmount()), LegacyComponentSerializer.legacySection().serialize(PrettySimpleShop.getItemName(itemStack)), economy.format(itemStack.getAmount() * shopInfo.getPrice()));
 
         shopInfo = new ShopInfo(shopInfo, itemStack.getAmount());
         player.getServer().getPluginManager().callEvent(new ShopBoughtEvent(player, shopInfo));
@@ -141,7 +143,7 @@ public class BuyCommand implements CommandExecutor, Listener {
         ShopInventoryHolder shopInventoryHolder = new ShopInventoryHolder();
         Inventory inventory = player.getServer().createInventory(shopInventoryHolder,
                 rows * 9,
-                config.getString("transactionCompletedWindow", Integer.toString(itemStack.getAmount()), PrettySimpleShop.getItemName(itemStack), economy.format(itemStack.getAmount() * shopInfo.getPrice())));
+                config.getString("transactionCompletedWindow", Integer.toString(itemStack.getAmount()), LegacyComponentSerializer.legacySection().serialize(PrettySimpleShop.getItemName(itemStack)), economy.format(itemStack.getAmount() * shopInfo.getPrice())));
         inventory.setMaxStackSize(itemStack.getMaxStackSize());
         inventory.addItem(itemStack); //Note: mutates the itemstack's amount
         shopInventoryHolder.setInventory(inventory);
@@ -162,11 +164,15 @@ public class BuyCommand implements CommandExecutor, Listener {
     //Drop items not taken from the "collection window"
     @EventHandler
     private void onCloseShopInventory(InventoryCloseEvent event) {
-        if (!(event.getInventory().getHolder() instanceof ShopInventoryHolder))
+        if (!(event.getInventory().getHolder() instanceof ShopInventoryHolder)) {
             return;
+        }
+
         for (ItemStack itemStack : event.getInventory()) {
-            if (itemStack == null)
+            if (itemStack == null) {
                 continue;
+            }
+
             event.getPlayer().getLocation().getWorld().dropItemNaturally(event.getPlayer().getLocation(), itemStack);
         }
     }

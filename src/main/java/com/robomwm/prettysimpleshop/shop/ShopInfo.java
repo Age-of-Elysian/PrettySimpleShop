@@ -1,6 +1,7 @@
 package com.robomwm.prettysimpleshop.shop;
 
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
@@ -42,7 +43,7 @@ public class ShopInfo {
         return null;
     }
 
-    public String getItemName() {
+    public Component getItemName() {
         return PrettySimpleShop.getItemName(item);
     }
 
