@@ -117,8 +117,8 @@ public class ShowoffItem implements Listener {
             InventoryHolder holder = ((Container) event.getBlock().getState()).getInventory().getHolder();
 
             if (holder instanceof DoubleChest doubleChest) {
-                despawnItem(((Chest) (doubleChest.getLeftSide())).getLocation().add(0.5, 1.25, 0.5));
-                despawnItem(((Chest) (doubleChest.getRightSide())).getLocation().add(0.5, 1.25, 0.5));
+                despawnItem(((Chest) (doubleChest.getLeftSide())).getLocation().add(0.5, 1.15, 0.5));
+                despawnItem(((Chest) (doubleChest.getRightSide())).getLocation().add(0.5, 1.15, 0.5));
             }
         });
     }
@@ -147,11 +147,11 @@ public class ShowoffItem implements Listener {
 
     @EventHandler
     private void onShopBreak(ShopBreakEvent event) {
-        despawnItem(event.getShopInfo().getLocation().add(0.5, 1.25, 0.5));
+        despawnItem(event.getShopInfo().getLocation().add(0.5, 1.15, 0.5));
     }
 
     private boolean spawnItem(ShopInfo shopInfo) {
-        Location location = shopInfo.getLocation().add(0.5, 1.25, 0.5);
+        Location location = shopInfo.getLocation().add(0.5, 1.15, 0.5);
         ItemStack itemStack = shopInfo.getItem();
         despawnItem(location);
         if (itemStack == null)
@@ -170,7 +170,7 @@ public class ShowoffItem implements Listener {
                 displayText.text(PrettySimpleShop.getItemName(itemStack));
                 displayText.setBillboard(Display.Billboard.VERTICAL);
                 displayText.setTransformation(new Transformation(
-                        new Vector3f(0f, 0.45f, 0f),
+                        new Vector3f(0f, 0.4f, 0f),
                         new AxisAngle4f(0f, 0f, 0f, 1f),
                         new Vector3f(0.5f, 0.5f, 0.5f),
                         new AxisAngle4f(0f, 0f, 0f, 1f)
