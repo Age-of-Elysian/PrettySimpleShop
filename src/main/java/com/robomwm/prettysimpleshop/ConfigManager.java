@@ -2,6 +2,7 @@ package com.robomwm.prettysimpleshop;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -42,7 +43,6 @@ public class ConfigManager {
         config.addDefault("showItemDetailsInActionBar", true);
         config.addDefault("deleteShopWhenBroken", false);
         config.addDefault("useWorldWhitelist", false);
-        config.addDefault("confirmTransactions", true);
         config.addDefault("useBuyPrompt", true);
         config.addDefault("alwaysShowBuyPrompt", true);
 
@@ -54,7 +54,7 @@ public class ConfigManager {
         shopBlockList.add("CHEST");
         shopBlockList.add("TRAPPED_CHEST");
         shopBlockList.add("BARREL");
-        for (Material material : ExtraTags.SHULKER_BOX.getMaterials())
+        for (Material material : Tag.SHULKER_BOXES.getValues())
             shopBlockList.add(material.name());
         config.addDefault("shopBlocks", shopBlockList);
 
@@ -122,7 +122,6 @@ public class ConfigManager {
         }
 
         config.options().header("showOffItems spawns a display item above each shop.\n" +
-                "confirmTransactions shows the buyer a preview the transaction via a book GUI before committing to the purchase.\n" +
                 "showBuyPrompt prompts the buyer to input the quantity they wish to buy in chat, instead of requiring them to use the /buy command.\n" +
                 "shopBlocks contains blocks you allow to be used as shops. Only blocks that are a Nameable Container can be used as a shop.\n" +
                 "Valid Material names can be found here https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html\n" +

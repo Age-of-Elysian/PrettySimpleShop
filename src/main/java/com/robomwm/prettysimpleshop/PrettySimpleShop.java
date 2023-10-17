@@ -11,13 +11,10 @@ import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopListener;
 import net.kyori.adventure.text.Component;
 import net.milkbowl.vault.economy.Economy;
-import org.bstats.bukkit.Metrics;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import java.util.concurrent.Callable;
 
 /**
  * Created on 2/4/2018.
@@ -35,27 +32,6 @@ public class PrettySimpleShop extends JavaPlugin {
         config = new ConfigManager(this);
         debug = config.isDebug();
         shopAPI = new ShopAPI(config.getString("shopName"), config.getString("price"), config.getString("sales"), config);
-        try {
-            Metrics metrics = new Metrics(this, 3383);
-            metrics.addCustomChart(new Metrics.SimplePie("bukkit_implementation", new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    return getServer().getVersion().split("-")[1];
-                }
-            }));
-
-            for (final String key : getConfig().getKeys(false)) {
-                if (!getConfig().isBoolean(key) && !getConfig().isInt(key) && !getConfig().isString(key))
-                    continue;
-                metrics.addCustomChart(new Metrics.SimplePie(key.toLowerCase(), new Callable<String>() {
-                    @Override
-                    public String call() throws Exception {
-                        return getConfig().getString(key);
-                    }
-                }));
-            }
-        } catch (Throwable ignored) {
-        }
 
         PrettySimpleShop plugin = this;
         new BukkitRunnable() {

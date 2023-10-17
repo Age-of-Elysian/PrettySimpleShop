@@ -5,6 +5,7 @@ import com.robomwm.prettysimpleshop.event.ShopBreakEvent;
 import com.robomwm.prettysimpleshop.event.ShopOpenCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopPricedEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -23,12 +24,14 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.component;
+import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unparsed;
 
 /**
  * Created on 2/8/2018.
@@ -137,9 +140,17 @@ public class ShopListener implements Listener {
 
         selectedShop.put(player, shopInfo);
 
-        // TODO: send message
+        // TODO: make configurable
 
-        config.sendTip(player, "saleInfo");
+        player.sendMessage(
+                MiniMessage.miniMessage().deserialize(
+                        "<green>How many <item> do you want? <yellow>(<available> available, <price> each)",
+                        component("item", item.displayName()),
+                        unparsed("price", economy.format((shopInfo.getPrice()))),
+                        unparsed("available", Integer.toString(item.getAmount()))
+                )
+        );
+
         Bukkit.getPluginManager().callEvent(shopSelectEvent);
         return true;
     }

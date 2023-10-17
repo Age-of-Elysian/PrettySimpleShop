@@ -43,7 +43,6 @@ public class BuyConversation implements Listener {
         buyPrompt.remove(player);
         if (!event.hasIntentToBuy())
             return;
-        configManager.sendMessage(player, "buyPrompt", LegacyComponentSerializer.legacySection().serialize(event.getShopInfo().getItemName()));
         buyPrompt.add(player);
     }
 
