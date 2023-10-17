@@ -17,7 +17,6 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.block.DoubleChest;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.TextDisplay;
@@ -28,12 +27,10 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -46,8 +43,6 @@ import java.util.Set;
 public class ShowoffItem implements Listener {
     private PrettySimpleShop plugin;
     private ShopAPI shopAPI;
-    private YamlConfiguration cache;
-    private File cacheFile;
     private Set<ItemDisplay> spawnedItems = new HashSet<>();
     private ConfigManager config;
     private boolean showItemName;
@@ -58,19 +53,9 @@ public class ShowoffItem implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.shopAPI = shopAPI;
         this.showItemName = showItemName;
-        cacheFile = new File(plugin.getDataFolder(), "chunksContainingShops.data");
-        cache = YamlConfiguration.loadConfiguration(cacheFile);
         for (World world : plugin.getServer().getWorlds())
             for (Chunk chunk : world.getLoadedChunks())
                 loadShopItemsInChunk(chunk);
-    }
-
-    private void saveCache() {
-        try {
-            cache.save(cacheFile);
-        } catch (Throwable rock) {
-            plugin.getLogger().warning("Unable to save cache file: " + rock.getMessage());
-        }
     }
 
     @EventHandler
@@ -84,25 +69,26 @@ public class ShowoffItem implements Listener {
     }
 
     private void loadShopItemsInChunk(Chunk chunk) {
-        if (!cache.contains(getChunkName(chunk)))
-            return;
         Collection<BlockState> snapshot = chunk.getTileEntities(block -> config.isShopBlock(block.getType()), false);
-        boolean noShops = true;
+
         for (BlockState state : snapshot) {
             Container container = shopAPI.getContainer(state.getLocation());
-            if (container == null || !shopAPI.isShop(container, false))
+
+            if (container == null || !shopAPI.isShop(container, false)) {
                 continue;
+            }
+
             ItemStack item = shopAPI.getItemStack(container);
-            if (item == null)
+
+            if (item == null) {
                 continue;
-            if (spawnItem(new ShopInfo(shopAPI.getLocation(container), item, plugin.getShopAPI().getPrice(container))))
-                noShops = false; //Shops exist in this chunk
+            }
+
+            spawnItem(new ShopInfo(shopAPI.getLocation(container), item, plugin.getShopAPI().getPrice(container)));
         }
-        if (noShops)
-            removeCachedChunk(chunk);
     }
 
-    //despawn items when a shop chest becomes a doublechest
+    // despawn items when a shop chest becomes a double chest
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     private void onDoubleChest(BlockPlaceEvent event) {
         if (!config.isWhitelistedWorld(event.getBlock().getWorld())) {
@@ -184,8 +170,6 @@ public class ShowoffItem implements Listener {
 
         spawnedItems.add(item);
 
-        cacheChunk(location.getChunk());
-
         return true;
     }
 
@@ -201,22 +185,6 @@ public class ShowoffItem implements Listener {
 
             PrettySimpleShop.debug("removed item at " + location);
         }
-    }
-
-    private void cacheChunk(Chunk chunk) {
-        if (cache.contains(getChunkName(chunk)))
-            return;
-        cache.set(getChunkName(chunk), true);
-        saveCache();
-    }
-
-    private void removeCachedChunk(Chunk chunk) {
-        cache.set(getChunkName(chunk), null);
-        saveCache();
-    }
-
-    private String getChunkName(Chunk chunk) {
-        return chunk.getWorld().getName() + chunk.getX() + "," + chunk.getZ();
     }
 
     public void despawnAll() {
