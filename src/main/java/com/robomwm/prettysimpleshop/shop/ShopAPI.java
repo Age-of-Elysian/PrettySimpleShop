@@ -2,8 +2,6 @@ package com.robomwm.prettysimpleshop.shop;
 
 import com.robomwm.prettysimpleshop.ConfigManager;
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.*;
@@ -43,7 +41,6 @@ public class ShopAPI {
      * @return the item sold, or null if either no item exists or multiple types of items are present in the container
      */
     public ItemStack getItemStack(Container container) {
-        Validate.notNull(container);
         Inventory inventory = container.getInventory();
         ItemStack item = null;
         for (ItemStack itemStack : inventory) {
@@ -115,7 +112,7 @@ public class ShopAPI {
         //Otherwise, just change the price portion of the string
         name[1] = Double.toString(newPrice);
 
-        setName(container, StringUtils.join(name, " "));
+        setName(container, String.join(" ", name));
     }
 
     public double getPrice(Container container) {
@@ -143,7 +140,7 @@ public class ShopAPI {
         revenue = Double.parseDouble(name[4].substring(2));
         if (reset) {
             name[4] = "\u00A7\u00A7";
-            setName(container, StringUtils.join(name, " "));
+            setName(container, String.join(" ", name));
         }
         return revenue;
     }
@@ -254,7 +251,7 @@ public class ShopAPI {
         PrettySimpleShop.debug("rev" + revenue);
         revenue += shopItem.getAmount() * price;
         name[4] = "\u00A7\u00A7" + revenue;
-        setName(container, StringUtils.join(name, " "));
+        setName(container, String.join(" ", name));
 
         Inventory inventory = container.getInventory();
         inventory.removeItem(shopItem);

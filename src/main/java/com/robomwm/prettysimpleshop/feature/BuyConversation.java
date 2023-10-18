@@ -1,14 +1,13 @@
 package com.robomwm.prettysimpleshop.feature;
 
-import com.robomwm.prettysimpleshop.ConfigManager;
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -27,14 +26,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author RoboMWM
  */
 public class BuyConversation implements Listener {
-    private final ConfigManager configManager;
     private final JavaPlugin plugin;
     private final Set<Player> buyPrompt = ConcurrentHashMap.newKeySet(); //thread safe????????
 
     public BuyConversation(PrettySimpleShop plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        this.configManager = plugin.getConfigManager();
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -62,11 +59,12 @@ public class BuyConversation implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    private void onChat(AsyncPlayerChatEvent event) {
+    private void onChat(AsyncChatEvent event) {
         if (!buyPrompt.remove(event.getPlayer()))
             return;
         try {
-            int amount = Integer.parseInt(event.getMessage());
+            String message = PlainTextComponentSerializer.plainText().serialize(event.originalMessage());
+            int amount = Integer.parseInt(message);
             if (amount <= 0)
                 return;
             event.setCancelled(true);
@@ -80,54 +78,3 @@ public class BuyConversation implements Listener {
         }
     }
 }
-
-//No way to abort on failed input :c
-
-//new ConversationFactory(plugin)
-//        .withFirstPrompt(new AmountToBuy(event.getPlayer(), PrettySimpleShop.getItemName(event.getShopInfo().getItem())))
-//        .withPrefix(new PluginNameConversationPrefix(plugin))
-//        .withLocalEcho(false)
-//        .buildConversation(event.getPlayer()).begin();
-//
-//        }
-//
-//private class AmountToBuy extends NumericPrompt
-//{
-//    private Player player;
-//    private String itemName;
-//    AmountToBuy(Player player, String itemName)
-//    {
-//        this.player = player;
-//        this.itemName = itemName;
-//    }
-//
-//    @Override
-//    protected Prompt acceptValidatedInput(ConversationContext context, Number input)
-//    {
-//        if (input.intValue() > 0)
-//            player.performCommand("/buy " + input.intValue()); //TODO: call method directly
-//        return Prompt.END_OF_CONVERSATION;
-//    }
-//
-//    @Override
-//    public String getPromptText(ConversationContext context)
-//    {
-//        return "How many " + context.getSessionData("itemName") + " would you like to buy?"; //TODO: configureable
-//    }
-//
-//    //Why do they not offer a way to cancel...
-//    @Override
-//    public Prompt acceptInput(ConversationContext context, String input) {
-//        if (isInputValid(context, input)) {
-//            return acceptValidatedInput(context, input);
-//        } else {
-//            String failPrompt = getFailedValidationText(context, input);
-//            if (failPrompt != null) {
-//                context.getForWhom().sendRawMessage(ChatColor.RED + failPrompt);
-//            }
-//            // Redisplay this prompt to the user to re-collect input
-//            return this;
-//        }
-//    }
-//
-//}
