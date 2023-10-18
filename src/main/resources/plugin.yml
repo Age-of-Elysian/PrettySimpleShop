@@ -1,7 +1,7 @@
 name: PrettySimpleShop
 version: '${project.version}-${git.commit.id.abbrev}'
 website: http://robomwm.com
-author: RoboMWM
+authors: [Vrganj, RoboMWM]
 main: com.robomwm.prettysimpleshop.PrettySimpleShop
 api-version: '1.19'
 softdepend:
