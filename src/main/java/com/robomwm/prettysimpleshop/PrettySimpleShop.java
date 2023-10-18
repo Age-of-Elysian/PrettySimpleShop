@@ -27,7 +27,7 @@ public class PrettySimpleShop extends JavaPlugin {
     public void onEnable() {
         config = new ConfigManager(this);
         debug = config.isDebug();
-        shopAPI = new ShopAPI(config.getString("shopName"), config.getString("price"), config.getString("sales"), config);
+        shopAPI = new ShopAPI(config.getString("shopName"), config.getString("price"), config.getString("sales"));
 
         PrettySimpleShop plugin = this;
         new BukkitRunnable() {

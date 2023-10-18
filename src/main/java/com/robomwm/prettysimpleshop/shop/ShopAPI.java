@@ -25,13 +25,11 @@ public class ShopAPI {
     private final String shopKey;
     private final String priceKey;
     private final String salesKey;
-    private final ConfigManager config;
 
-    public ShopAPI(String shopKey, String priceKey, String salesKey, ConfigManager config) {
+    public ShopAPI(String shopKey, String priceKey, String salesKey) {
         this.shopKey = shopKey;
         this.priceKey = priceKey;
         this.salesKey = salesKey;
-        this.config = config;
     }
 
     /**
@@ -47,14 +45,17 @@ public class ShopAPI {
         Inventory inventory = container.getInventory();
         ItemStack item = null;
         for (ItemStack itemStack : inventory) {
-            if (itemStack == null || itemStack.getType() == Material.AIR)
+            if (itemStack == null || itemStack.getType() == Material.AIR) {
                 continue;
-            if (item == null) //Set item
+            }
+
+            if (item == null) {
                 item = itemStack.clone();
-            else if (!item.isSimilar(itemStack)) //Shop must contain only one type of item
+            } else if (!item.isSimilar(itemStack)) {
                 return null;
-            else
+            } else {
                 item.setAmount(item.getAmount() + itemStack.getAmount());
+            }
         }
         return item;
     }
@@ -67,55 +68,40 @@ public class ShopAPI {
         return isShopFormat(getName(container), includeNew);
     }
 
-    public boolean isShop(Block block, boolean includeNew) {
-        if (block == null)
+    public boolean isShopFormat(String name, boolean includeNew) {
+        if (name == null || name.isEmpty()) {
             return false;
-        if (!config.isShopBlock((block.getType())))
-            return false;
-        Container container = (Container) block.getState(false);
-        return isShop(container, includeNew);
-    }
+        }
 
-    public boolean isDoubleChest(Container container) {
-        return container.getInventory().getHolder() instanceof DoubleChest;
-    }
+        String[] split = name.split(" ");
 
-    public boolean isShopFormat(String theName, boolean includeNew) {
-        if (theName == null || theName.isEmpty())
-            return false;
-        String[] name = theName.split(" ");
-        if (name.length == 1 && name[0].equalsIgnoreCase(shopKey) && includeNew) //new shop
+        if (split.length == 1 && split[0].equalsIgnoreCase(shopKey) && includeNew) {
             return true;
-        return name.length == 5 && name[4].startsWith("\u00A7\u00A7"); //could also check price and sales keyword too
+        }
+
+        return split.length == 5 && split[4].startsWith("\u00A7\u00A7");
     }
 
     public void setPrice(Container container, double newPrice) {
-        String theName = getName(container);
-        PrettySimpleShop.debug("setPrice:" + theName + ";");
-        //Now any container can be a shop. May add configuration for this if desired.
-//        if (!isShopFormat(theName, true))
-//            return false;
+        String name = getName(container);
+        PrettySimpleShop.debug("setPrice:" + name + ";");
 
-        String[] name = null;
-        if (theName != null)
-            name = theName.split(" ");
+        String[] split = null;
 
-//        PrettySimpleShop.debug("setPrice:" + name.length);
-//        if (name.length == 1 && name[0].equalsIgnoreCase(shopKey))
-//            return setName(container, priceKey + " " + Double.toString(newPrice) + " " + salesKey + " 0 \u00A7\u00A7");
-//        else if (!name[0].equals(priceKey))
-//            return false;
+        if (name != null) {
+            split = name.split(" ");
+        }
 
-        //Shop not named, or named something else (i.e. basically turn it into a shop no matter what)
-        if (name == null || !name[0].equals(priceKey)) {
+        // turn it into a shop no matter what
+        if (split == null || !split[0].equals(priceKey)) {
             setName(container, priceKey + " " + newPrice + " " + salesKey + " 0 \u00A7\u00A7");
             return;
         }
 
-        //Otherwise, just change the price portion of the string
-        name[1] = Double.toString(newPrice);
+        // otherwise, change the price portion of the string
+        split[1] = Double.toString(newPrice);
 
-        setName(container, String.join(" ", name));
+        setName(container, String.join(" ", split));
     }
 
     public ShopInfo getShopInfo(Container container) {
@@ -123,32 +109,46 @@ public class ShopAPI {
     }
 
     public double getPrice(Container container) {
-        String theName = getName(container);
-        if (theName == null || theName.isEmpty())
+        String name = getName(container);
+
+        if (name == null || name.isEmpty()) {
             return -1;
-        String[] name = theName.split(" ");
-        if (name.length < 2 || !name[0].equals(priceKey))
+        }
+
+        String[] split = name.split(" ");
+
+        if (split.length < 2 || !split[0].equals(priceKey)) {
             return -1;
-        else
-            return Double.parseDouble(name[1]);
+        }
+
+        return Double.parseDouble(split[1]);
     }
 
     public double getRevenue(Container container, boolean reset) {
-        String theName = getName(container);
-        double revenue;
-        if (theName == null || theName.isEmpty())
+        String name = getName(container);
+
+        if (name == null || name.isEmpty()) {
             return -1;
-        String[] name = theName.split(" ");
-        PrettySimpleShop.debug("getRevenue:" + String.join(" ", name));
-        if (name.length < 5 || name[4].length() < 2 || !name[4].startsWith("\u00A7\u00A7"))
-            return -1;
-        if (name[4].length() < 3)
-            return 0;
-        revenue = Double.parseDouble(name[4].substring(2));
-        if (reset) {
-            name[4] = "\u00A7\u00A7";
-            setName(container, String.join(" ", name));
         }
+
+        String[] split = name.split(" ");
+        PrettySimpleShop.debug("getRevenue:" + String.join(" ", split));
+
+        if (split.length < 5 || split[4].length() < 2 || !split[4].startsWith("\u00A7\u00A7")) {
+            return -1;
+        }
+
+        if (split[4].length() < 3) {
+            return 0;
+        }
+
+        double revenue = Double.parseDouble(split[4].substring(2));
+
+        if (reset) {
+            split[4] = "\u00A7\u00A7";
+            setName(container, String.join(" ", split));
+        }
+
         return revenue;
     }
 
@@ -186,41 +186,41 @@ public class ShopAPI {
      * @return
      */
     public Location getLocation(Container container) {
-        if (isDoubleChest(container))
-            return ((DoubleChest) container.getInventory().getHolder()).getLocation();
-        return container.getLocation();
+        return container.getInventory().getLocation();
     }
 
     private String getName(Container container) {
-        if (container == null)
+        if (container == null) {
             return null;
+        }
 
-        if (isDoubleChest(container)) {
-            DoubleChest doubleChest = (DoubleChest) container.getInventory().getHolder();
-            //Left side takes precedence, but we'll override if the right side is a shop and the left side isn't
-            if (!isShopFormat(((Chest) doubleChest.getLeftSide(false)).getCustomName(), false) && isShopFormat((((Chest) doubleChest.getRightSide(false))).getCustomName(), true))
-                return ((Chest) doubleChest.getRightSide(false)).getCustomName();
-            return ((Chest) doubleChest.getLeftSide(false)).getCustomName();
+        if (container.getInventory().getHolder(false) instanceof DoubleChest doubleChest) {
+            String left = ((Container) doubleChest.getLeftSide(false)).getCustomName();
+            String right = ((Container) doubleChest.getRightSide(false)).getCustomName();
+
+            // left side takes precedence, but we'll override if the right side is a shop and the left side isn't
+            if (!isShopFormat(left, false) && isShopFormat(right, true)) {
+                return right;
+            }
+
+            return left;
         }
 
         return container.getCustomName();
     }
 
-    private void setName(Container actualContainer, String name) {
-        if (actualContainer == null)
-            return;
-        if (!isDoubleChest(actualContainer)) {
-            PrettySimpleShop.debug("setName: " + name);
-            actualContainer.setCustomName(name);
+    private void setName(Container container, String name) {
+        if (container == null) {
             return;
         }
-        //Thanks Bukkit
-        DoubleChest doubleChest = (DoubleChest) actualContainer.getInventory().getHolder();
-        Chest leftChest = (Chest) doubleChest.getLeftSide(false);
-        leftChest.setCustomName(name);
-        Chest rightChest = (Chest) doubleChest.getRightSide(false);
-        rightChest.setCustomName(name);
-        PrettySimpleShop.debug("setName: " + name);
+
+        if (container.getInventory().getHolder(false) instanceof DoubleChest doubleChest) {
+            ((Chest) doubleChest.getLeftSide(false)).setCustomName(name);
+            ((Chest) doubleChest.getRightSide(false)).setCustomName(name);
+            return;
+        }
+
+        container.setCustomName(name);
     }
 
     /**
@@ -236,29 +236,32 @@ public class ShopAPI {
     public ItemStack performTransaction(Container container, ItemStack requestedItem, double price) {
         //Verify price
         PrettySimpleShop.debug(getPrice(container) + " " + price);
-        if (getPrice(container) != price)
+        if (getPrice(container) != price) {
             return null;
+        }
         PrettySimpleShop.debug("price validated");
         //Verify item type
         ItemStack shopItem = getItemStack(container);
-        if (!isSimilar(requestedItem, shopItem))
+        if (!isSimilar(requestedItem, shopItem)) {
             return null;
+        }
         PrettySimpleShop.debug(shopItem.toString() + requestedItem);
         PrettySimpleShop.debug("item validated");
         //Verify stock - cap to max stock remaining
         //We use and return the shopItem since this is already a cloned ItemStack (instead of also cloning item)
         //(This is why we're modifying `shopItem` to the request amount, unless it is larger.
-        if (requestedItem.getAmount() < shopItem.getAmount())
+        if (requestedItem.getAmount() < shopItem.getAmount()) {
             shopItem.setAmount(requestedItem.getAmount());
+        }
 
         //Update statistics/revenue first, otherwise will overwrite inventory changes
-        String[] name = getName(container).split(" ");
-        name[3] = Long.toString(Long.valueOf(name[3]) + shopItem.getAmount());
+        String[] split = getName(container).split(" ");
+        split[3] = Long.toString(Long.parseLong(split[3]) + shopItem.getAmount());
         double revenue = getRevenue(container, false);
         PrettySimpleShop.debug("rev" + revenue);
         revenue += shopItem.getAmount() * price;
-        name[4] = "\u00A7\u00A7" + revenue;
-        setName(container, String.join(" ", name));
+        split[4] = "\u00A7\u00A7" + revenue;
+        setName(container, String.join(" ", split));
 
         Inventory inventory = container.getInventory();
         inventory.removeItem(shopItem);
