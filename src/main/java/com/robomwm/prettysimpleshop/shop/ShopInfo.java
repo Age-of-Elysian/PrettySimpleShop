@@ -43,10 +43,6 @@ public class ShopInfo {
         return null;
     }
 
-    public Component getItemName() {
-        return PrettySimpleShop.getItemName(item);
-    }
-
     @Override
     public boolean equals(Object other) {
         if (other == null)

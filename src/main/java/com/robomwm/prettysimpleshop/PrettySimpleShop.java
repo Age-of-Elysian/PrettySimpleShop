@@ -61,18 +61,6 @@ public class PrettySimpleShop extends JavaPlugin {
             showoffItem.despawnAll();
     }
 
-    public static Component getItemName(ItemStack item) {
-        if (item.hasItemMeta()) {
-            var meta = item.getItemMeta();
-
-            if (meta.hasDisplayName()) {
-                return meta.displayName();
-            }
-        }
-
-        return Component.translatable(item.translationKey());
-    }
-
     public ShopAPI getShopAPI() {
         return shopAPI;
     }

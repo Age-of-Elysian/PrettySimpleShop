@@ -9,7 +9,6 @@ import com.robomwm.prettysimpleshop.event.ShopOpenCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
-import net.kyori.adventure.text.Component;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -36,6 +35,9 @@ import org.joml.Vector3f;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.component;
+import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unparsed;
 
 /**
  * Created on 2/9/2018.
@@ -160,8 +162,15 @@ public class ShowoffItem implements Listener {
 
         if (showItemName) {
             var text = location.getWorld().spawn(location, TextDisplay.class, displayText -> {
-                // TODO: make configurable
-                displayText.text(PrettySimpleShop.getItemName(itemStack).append(Component.newline()).append(Component.text(shopInfo.getItem().getAmount() + "x @ " + economy.format(shopInfo.getPrice()))));
+                displayText.text(
+                        config.getComponent(
+                                "hologramFormat",
+                                component("item", itemStack.displayName()),
+                                unparsed("amount", Integer.toString(shopInfo.getItem().getAmount())),
+                                unparsed("price", economy.format(shopInfo.getPrice()))
+                        )
+                );
+
                 displayText.setBillboard(Display.Billboard.VERTICAL);
                 displayText.setTransformation(new Transformation(
                         new Vector3f(0f, 0.4f, 0f),

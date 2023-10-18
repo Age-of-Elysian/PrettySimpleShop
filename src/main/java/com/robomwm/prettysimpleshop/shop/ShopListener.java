@@ -5,7 +5,6 @@ import com.robomwm.prettysimpleshop.event.ShopBreakEvent;
 import com.robomwm.prettysimpleshop.event.ShopOpenCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopPricedEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -123,14 +122,14 @@ public class ShopListener implements Listener {
         double price = shopAPI.getPrice(container);
 
         if (price < 0) {
-            config.sendMessage(player, "noPrice");
+            config.sendComponent(player, "noPrice");
             return true;
         }
 
         ItemStack item = shopAPI.getItemStack(container);
 
         if (item == null) {
-            config.sendMessage(player, "noStock");
+            config.sendComponent(player, "noStock");
             return true;
         }
 
@@ -140,15 +139,12 @@ public class ShopListener implements Listener {
 
         selectedShop.put(player, shopInfo);
 
-        // TODO: make configurable
-
-        player.sendMessage(
-                MiniMessage.miniMessage().deserialize(
-                        "<green>How many <item> do you want? <yellow>(<available> available, <price> each)",
-                        component("item", item.displayName()),
-                        unparsed("price", economy.format((shopInfo.getPrice()))),
-                        unparsed("available", Integer.toString(item.getAmount()))
-                )
+        config.sendComponent(
+                player,
+                "buyPrompt",
+                component("item", item.displayName()),
+                unparsed("price", economy.format(shopInfo.getPrice())),
+                unparsed("available", Integer.toString(item.getAmount()))
         );
 
         Bukkit.getPluginManager().callEvent(shopSelectEvent);
@@ -179,7 +175,7 @@ public class ShopListener implements Listener {
         if (priceSetter.containsKey(player)) {
             double newPrice = priceSetter.remove(player);
             shopAPI.setPrice(container, newPrice);
-            config.sendMessage(player, "priceApplied", economy.format(newPrice));
+            config.sendComponent(player, "priceApplied", unparsed("price", economy.format(newPrice)));
             Bukkit.getPluginManager().callEvent(new ShopPricedEvent(player, container.getLocation(), newPrice));
         }
 
@@ -196,7 +192,7 @@ public class ShopListener implements Listener {
         }
 
         economy.depositPlayer(player, revenue);
-        config.sendMessage(player, "collectRevenue", economy.format(revenue));
+        config.sendComponent(player, "collectRevenue", unparsed("revenue", economy.format(revenue)));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
@@ -213,7 +209,7 @@ public class ShopListener implements Listener {
             return;
         Player player = event.getPlayer();
         economy.depositPlayer(player, revenue);
-        config.sendMessage(player, "collectRevenue", economy.format(revenue));
+        config.sendComponent(player, "collectRevenue", unparsed("revenue", economy.format(revenue)));
     }
 
     //Purely for calling the dumb event
@@ -244,11 +240,11 @@ public class ShopListener implements Listener {
     public void priceCommand(Player player, Double price) {
         if (price == null || price <= 0) {
             if (priceSetter.remove(player) != null)
-                config.sendMessage(player, "setPriceCanceled");
+                config.sendComponent(player, "setPriceCanceled");
             return;
         }
         selectedShop.remove(player);
         priceSetter.put(player, price);
-        config.sendMessage(player, "applyPrice");
+        config.sendComponent(player, "applyPrice");
     }
 }

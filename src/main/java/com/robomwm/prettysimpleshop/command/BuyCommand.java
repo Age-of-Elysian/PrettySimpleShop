@@ -6,8 +6,8 @@ import com.robomwm.prettysimpleshop.event.ShopBoughtEvent;
 import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
 import com.robomwm.prettysimpleshop.shop.ShopListener;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -20,6 +20,9 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+
+import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.component;
+import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unparsed;
 
 /**
  * Created on 2/8/2018.
@@ -49,7 +52,7 @@ public class BuyCommand implements CommandExecutor, Listener {
         {
             World world = player.getServer().getWorld(args[0]);
             if (world == null || player.getWorld() != world) {
-                config.sendMessage(player, "tooFar");
+                config.sendComponent(player, "tooFar");
                 return false;
             }
             Location location;
@@ -61,12 +64,12 @@ public class BuyCommand implements CommandExecutor, Listener {
             }
 
             if (!shopListener.selectShop(player, location.getBlock(), true))
-                config.sendMessage(player, "noShopThere");
+                config.sendComponent(player, "noShopThere");
             return true;
         }
 
         if (args[0].equalsIgnoreCase("cancel")) {
-            config.sendMessage(player, "transactionCanceled");
+            config.sendComponent(player, "transactionCanceled");
             return true;
         }
 
@@ -85,17 +88,17 @@ public class BuyCommand implements CommandExecutor, Listener {
     public boolean buyCommand(Player player, int amount, boolean confirm) {
         ShopInfo shopInfo = shopListener.getSelectedShop(player);
         if (shopInfo == null) {
-            config.sendMessage(player, "noShopSelected");
+            config.sendComponent(player, "noShopSelected");
             return false;
         }
 
         if (shopInfo.getPrice() < 0) {
-            config.sendMessage(player, "noPrice");
+            config.sendComponent(player, "noPrice");
             return false;
         }
 
         if (economy.getBalance(player) < amount * shopInfo.getPrice()) {
-            config.sendMessage(player, "noMoney");
+            config.sendComponent(player, "noMoney");
             return false;
         }
 
@@ -103,18 +106,24 @@ public class BuyCommand implements CommandExecutor, Listener {
         itemStack.setAmount(amount);
 
         if (!hasInventorySpace(player, itemStack)) {
-            config.sendMessage(player, "noSpace");
+            config.sendComponent(player, "noSpace");
         }
 
         itemStack = shopAPI.performTransaction(shopAPI.getContainer(shopInfo.getLocation()), itemStack, shopInfo.getPrice());
         if (itemStack == null) {
-            config.sendMessage(player, "shopModified");
+            config.sendComponent(player, "shopModified");
             return false;
         }
 
         economy.withdrawPlayer(player, itemStack.getAmount() * shopInfo.getPrice());
 
-        config.sendMessage(player, "transactionCompleted", Integer.toString(itemStack.getAmount()), LegacyComponentSerializer.legacySection().serialize(PrettySimpleShop.getItemName(itemStack)), economy.format(itemStack.getAmount() * shopInfo.getPrice()));
+        config.sendComponent(
+                player,
+                "transactionCompleted",
+                component("item", itemStack.displayName()),
+                unparsed("amount", Integer.toString(itemStack.getAmount())),
+                unparsed("price", economy.format(itemStack.getAmount() * shopInfo.getPrice()))
+        );
 
         player.getServer().getPluginManager().callEvent(new ShopBoughtEvent(player, shopInfo, itemStack.getAmount()));
 
@@ -123,9 +132,16 @@ public class BuyCommand implements CommandExecutor, Listener {
         int slots = ((itemStack.getAmount() + (itemStack.getMaxStackSize() - 1)) / itemStack.getMaxStackSize());
         int rows = (slots + 8) / 9;
         ShopInventoryHolder shopInventoryHolder = new ShopInventoryHolder();
-        Inventory inventory = player.getServer().createInventory(shopInventoryHolder,
+        Inventory inventory = Bukkit.createInventory(
+                shopInventoryHolder,
                 rows * 9,
-                config.getString("transactionCompletedWindow", Integer.toString(itemStack.getAmount()), LegacyComponentSerializer.legacySection().serialize(PrettySimpleShop.getItemName(itemStack)), economy.format(itemStack.getAmount() * shopInfo.getPrice())));
+                config.getComponent(
+                        "transactionCompletedWindow",
+                        component("item", itemStack.displayName()),
+                        unparsed("amount", Integer.toString(itemStack.getAmount())),
+                        unparsed("price", economy.format(itemStack.getAmount() * shopInfo.getPrice()))
+                )
+        );
         inventory.setMaxStackSize(itemStack.getMaxStackSize());
         inventory.addItem(itemStack); //Note: mutates the itemstack's amount
         shopInventoryHolder.setInventory(inventory);

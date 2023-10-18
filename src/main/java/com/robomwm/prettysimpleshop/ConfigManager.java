@@ -1,5 +1,10 @@
 package com.robomwm.prettysimpleshop;
 
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -7,10 +12,12 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 
 /**
@@ -24,11 +31,9 @@ public class ConfigManager {
     private final boolean debug;
     private ConfigurationSection showOffItemsFeatureSection;
     private ConfigurationSection messageSection;
-    private ConfigurationSection tipSection;
     private final Set<World> whitelistedWorlds = new HashSet<>();
     private final Set<Material> shopBlocks = new HashSet<>();
 
-    private final Map<Player, String> lastSeenTip = new HashMap<>();
 
     public ConfigManager(JavaPlugin plugin) {
         instance = plugin;
@@ -45,8 +50,7 @@ public class ConfigManager {
         config.addDefault("useBuyPrompt", true);
         config.addDefault("alwaysShowBuyPrompt", true);
 
-        List<String> whitelist = new ArrayList<>();
-        whitelist.add("mall");
+        List<String> whitelist = List.of("mall");
         config.addDefault("worldWhitelist", whitelist);
 
         List<String> shopBlockList = new ArrayList<>();
@@ -63,40 +67,30 @@ public class ConfigManager {
         messageSection.addDefault("shopName", "shop");
         messageSection.addDefault("price", "Price:");
         messageSection.addDefault("sales", "Sales:");
-        messageSection.addDefault("saleInfo", "{0} @ &e{1}&r. {2} available");
-        messageSection.addDefault("noPrice", "&cThis shop is not open for sale yet! &6If you are the owner, use /setprice <price> to open this shop!");
-        messageSection.addDefault("noStock", "&cThis shop is out of stock!");
-        messageSection.addDefault("noMoney", "&cTransaction canceled: Insufficient /money. Try again with a smaller quantity?");
-        messageSection.addDefault("noSpace", "&6Warning: you might not have enough inventory space to store this item.");
-        messageSection.addDefault("noShopSelected", "&eSelect a shop via left-clicking its chest.");
-        messageSection.addDefault("shopModified", "&cTransaction canceled: Shop was modified. Please try again.");
-        messageSection.addDefault("transactionCanceled", "&cTransaction canceled.");
-        messageSection.addDefault("transactionCompleted", "Transaction completed. Bought {0} {1} for {2}");
-        messageSection.addDefault("transactionCompletedWindow", "Bought {0} {1} for {2}");
-        messageSection.addDefault("transactionCompleted", "Bought {0} {1} for {2}");
-        messageSection.addDefault("applyPrice", "&bOpen the shop to apply your shiny new price, or use /setprice again to cancel.");
-        messageSection.addDefault("setPriceCanceled", "&c/setprice canceled");
-        messageSection.addDefault("priceApplied", "Price updated to {0}");
-        messageSection.addDefault("collectRevenue", "Collected {0} in sales from this shop");
-        messageSection.addDefault("tooFar", "&cYou're too far away from this shop");
-        messageSection.addDefault("noShopThere", "&cThis shop has been moved or destroyed");
-        messageSection.addDefault("buyPrompt", "&dPrettySimpleShop: &rHow many {0} &rwould you like to buy?");
-        messageSection.addDefault("TotalCost", "for a total cost of {0}");
-        messageSection.addDefault("currentBalanceAndCost", "You have {0} and will have {1} after confirming.");
-        messageSection.addDefault("shopCommand", "Selling:\nTo create a shop, put items of the same type in a chest, and use /setprice to set the price per item.\n" +
-                "Make sure your shop is protected from access or destruction to prevent theft!\n" +
-                "Buying:\n" +
-                "Punch a shop to view the item. Hover over it in chat for item details.\n" +
-                "Click the message, /buy, or double-punch a shop to buy from a shop\n");
-        messageSection.addDefault("Confirm", "&2[Confirm]");
-        messageSection.addDefault("Cancel", "&4[Cancel]");
-        messageSection.addDefault("buyCommandForConfirmationBook", "/buy");
-
-        tipSection = config.getConfigurationSection("tips");
-        if (tipSection == null)
-            tipSection = config.createSection("tips");
-        tipSection.addDefault("saleInfo", "Hover for item details. Click to /buy");
-        tipSection.addDefault("noStock", "If you are the owner, make sure there is only a single item type in the chest.");
+        messageSection.addDefault("noPrice", "<red>This shop is not open for sale yet! <yellow>If you are the owner, use /setprice <price> to open this shop!");
+        messageSection.addDefault("noStock", "<red>This shop is out of stock!");
+        messageSection.addDefault("noMoney", "<red>Transaction canceled: Insufficient /money. Try again with a smaller quantity?");
+        messageSection.addDefault("noSpace", "<red>Warning: you might not have enough inventory space to store this item.");
+        messageSection.addDefault("noShopSelected", "<red>Select a shop via left-clicking its chest.");
+        messageSection.addDefault("shopModified", "<red>Transaction canceled: Shop was modified. Please try again.");
+        messageSection.addDefault("transactionCanceled", "<red>Transaction canceled.");
+        messageSection.addDefault("transactionCompletedWindow", "Bought <amount>x <item> for <price>");
+        messageSection.addDefault("transactionCompleted", "<green>Bought <yellow><amount>x</yellow> <item> for <yellow><price>");
+        messageSection.addDefault("applyPrice", "<green>Open the shop to apply your shiny new price, or use /setprice again to cancel.");
+        messageSection.addDefault("setPriceCanceled", "<red>/setprice canceled");
+        messageSection.addDefault("priceApplied", "<green>Price updated to <yellow><price>");
+        messageSection.addDefault("collectRevenue", "<green>Collected <yellow><revenue></yellow> in sales from this shop");
+        messageSection.addDefault("tooFar", "<red>You're too far away from this shop");
+        messageSection.addDefault("noShopThere", "<red>This shop has been moved or destroyed");
+        messageSection.addDefault("buyPrompt", "<green>How many <item> do you want? <yellow>(<available> available, <price> each)");
+        messageSection.addDefault("shopCommand", """
+                Selling:
+                To create a shop, put items of the same type in a chest, and use /setprice to set the price per item.
+                Buying:
+                Punch a shop to view the item. Hover over it in chat for item details.
+                Click the message, /buy, or double-punch a shop to buy from a shop
+                """);
+        messageSection.addDefault("hologramFormat", "<item><newline><amount>x @ <price>");
 
         config.options().copyDefaults(true);
         instance.saveConfig();
@@ -146,38 +140,25 @@ public class ConfigManager {
         return debug;
     }
 
-    public void sendTip(Player player, String key) {
-        if (lastSeenTip.containsKey(player) && lastSeenTip.get(player).equals(key))
-            return;
-        lastSeenTip.put(player, key);
-        String message = formatter(tipSection.getString(key));
-        if (message.isEmpty())
-            return;
-        player.sendMessage(message);
+    public void sendComponent(Audience audience, String key, TagResolver... tagResolvers) {
+        audience.sendMessage(getComponent(key, tagResolvers));
     }
 
-    public void sendMessage(CommandSender player, String key) {
-        String message = getString(key);
-        if (!message.isEmpty())
-            player.sendMessage(message);
-    }
+    public Component getComponent(String key, TagResolver... tagResolvers) {
+        String input = messageSection.getString(key);
 
-    public void sendMessage(CommandSender player, String key, String... formatees) {
-        String message = getString(key, formatees);
-        if (!message.isEmpty())
-            player.sendMessage(message);
-    }
+        if (input != null) {
+            return MiniMessage.miniMessage().deserialize(input, tagResolvers);
+        }
 
-    public String getString(String key, String... formatees) {
-        return formatter(messageSection.getString(key), formatees);
+        return Component.text("Missing message: " + key, NamedTextColor.RED);
     }
 
     public String getString(String key) {
         return formatter(messageSection.getString(key));
     }
 
-    public boolean isWhitelistedWorld(World world) //may want to consider returning unmodifiable collection
-    {
+    public boolean isWhitelistedWorld(World world) {
         return whitelistedWorlds.isEmpty() || whitelistedWorlds.contains(world);
     }
 
@@ -186,22 +167,9 @@ public class ConfigManager {
     }
 
     /*Utility methods*/
-    private String formatter(String stringToFormat, String... formatees) {
-        return formatter(argParser(stringToFormat, formatees));
-    }
 
     private String formatter(String stringToFormat) {
         return ChatColor.translateAlternateColorCodes('&', stringToFormat);
     }
 
-    //String.format or whatever it was does weird stuff and doesn't like certain characters in the string when parsing {0} stuff so yea...
-
-    private String argParser(String stringToFill, String... args) {
-        int i = 0;
-        for (String arg : args) {
-            stringToFill = stringToFill.replaceAll("\\{" + i + "}", Matcher.quoteReplacement(arg));
-            i++;
-        }
-        return stringToFill;
-    }
 }
