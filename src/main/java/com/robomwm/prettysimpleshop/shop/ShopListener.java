@@ -28,6 +28,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.component;
 import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unparsed;
@@ -40,8 +41,8 @@ import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unpa
 public class ShopListener implements Listener {
     private final ShopAPI shopAPI;
     private final Economy economy;
-    private final Map<Player, ShopInfo> selectedShop = new HashMap<>();
-    private final Map<Player, Double> priceSetter = new HashMap<>();
+    private final Map<UUID, ShopInfo> selectedShop = new HashMap<>();
+    private final Map<UUID, Double> priceSetter = new HashMap<>();
     private final ConfigManager config;
 
 
@@ -55,29 +56,30 @@ public class ShopListener implements Listener {
     // Cleanup
     @EventHandler
     private void onQuit(PlayerQuitEvent event) {
-        selectedShop.remove(event.getPlayer());
-        priceSetter.remove(event.getPlayer());
+        selectedShop.remove(event.getPlayer().getUniqueId());
+        priceSetter.remove(event.getPlayer().getUniqueId());
     }
 
     // Cleanup
     @EventHandler
     private void onWorldChange(PlayerChangedWorldEvent event) {
-        selectedShop.remove(event.getPlayer());
-        priceSetter.remove(event.getPlayer());
-    }
-
-    private boolean isEnabledWorld(World world) {
-        return config.isWhitelistedWorld(world);
+        selectedShop.remove(event.getPlayer().getUniqueId());
+        priceSetter.remove(event.getPlayer().getUniqueId());
     }
 
     //We don't watch BlockDamageEvent as player may be in adventure (but uh this event probably doesn't fire in adventure either so... uhm yea... hmmm.
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     private void onLeftClickChest(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (event.getAction() != Action.LEFT_CLICK_BLOCK)
+
+        if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
-        if (!isEnabledWorld(event.getPlayer().getWorld()))
+        }
+
+        if (!config.isWhitelistedWorld(event.getPlayer().getWorld())) {
             return;
+        }
+
         selectShop(player, event.getClickedBlock());
     }
 
@@ -85,12 +87,19 @@ public class ShopListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     private void onRightClickChest(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (event.useInteractedBlock() != Event.Result.DENY)
+
+        if (event.useInteractedBlock() != Event.Result.DENY) {
             return;
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
+        }
+
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
-        if (!isEnabledWorld(event.getPlayer().getWorld()))
+        }
+
+        if (!config.isWhitelistedWorld(event.getPlayer().getWorld())) {
             return;
+        }
+
         selectShop(player, event.getClickedBlock());
     }
 
@@ -101,12 +110,15 @@ public class ShopListener implements Listener {
             priceCommand(event.getPlayer(), null);
             return;
         }
+
         if (event.getAction() == Action.PHYSICAL) {
             return;
         }
+
         if (event.getClickedBlock() != null && config.isShopBlock(event.getClickedBlock().getType())) {
             return;
         }
+
         priceCommand(event.getPlayer(), null);
     }
 
@@ -139,7 +151,7 @@ public class ShopListener implements Listener {
 
         ShopSelectEvent shopSelectEvent = new ShopSelectEvent(player, shopInfo);
 
-        selectedShop.put(player, shopInfo);
+        selectedShop.put(player.getUniqueId(), shopInfo);
 
         config.sendComponent(
                 player,
@@ -154,7 +166,7 @@ public class ShopListener implements Listener {
     }
 
     public ShopInfo getSelectedShop(Player player) {
-        return selectedShop.get(player);
+        return selectedShop.get(player.getUniqueId());
     }
 
     //Collect revenues
@@ -174,8 +186,8 @@ public class ShopListener implements Listener {
             return;
         }
 
-        if (priceSetter.containsKey(player)) {
-            double newPrice = priceSetter.remove(player);
+        if (priceSetter.containsKey(player.getUniqueId())) {
+            double newPrice = priceSetter.remove(player.getUniqueId());
             shopAPI.setPrice(container, newPrice);
             config.sendComponent(player, "priceApplied", unparsed("price", economy.format(newPrice)));
             Bukkit.getPluginManager().callEvent(new ShopPricedEvent(player, container.getLocation(), newPrice));
@@ -200,12 +212,19 @@ public class ShopListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     private void onBreakShop(BlockBreakEvent event) {
         Block block = event.getBlock();
-        if (!config.isShopBlock(block.getType()))
+
+        if (!config.isShopBlock(block.getType())) {
             return;
+        }
+
         Container container = (Container) block.getState(false);
-        if (!shopAPI.isShop(container))
+
+        if (!shopAPI.isShop(container)) {
             return;
+        }
+
         Bukkit.getPluginManager().callEvent(new ShopBreakEvent(event.getPlayer(), shopAPI.getShopInfo(container), event));
+
         double revenue = shopAPI.getRevenue(container, true);
 
         if (revenue > 0) {
@@ -229,8 +248,9 @@ public class ShopListener implements Listener {
             return;
         }
 
-        if (!shopAPI.isShop(container))
+        if (!shopAPI.isShop(container)) {
             return;
+        }
 
         Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, shopAPI.getShopInfo(container), false));
     }
@@ -245,12 +265,15 @@ public class ShopListener implements Listener {
 
     public void priceCommand(Player player, Double price) {
         if (price == null || price <= 0) {
-            if (priceSetter.remove(player) != null)
+            if (priceSetter.remove(player.getUniqueId()) != null) {
                 config.sendComponent(player, "setPriceCanceled");
+            }
+
             return;
         }
-        selectedShop.remove(player);
-        priceSetter.put(player, price);
+
+        selectedShop.remove(player.getUniqueId());
+        priceSetter.put(player.getUniqueId(), price);
         config.sendComponent(player, "applyPrice");
     }
 }
