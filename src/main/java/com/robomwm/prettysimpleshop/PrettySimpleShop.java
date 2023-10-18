@@ -3,7 +3,6 @@ package com.robomwm.prettysimpleshop;
 import com.robomwm.prettysimpleshop.command.BuyCommand;
 import com.robomwm.prettysimpleshop.command.HelpCommand;
 import com.robomwm.prettysimpleshop.command.PriceCommand;
-import com.robomwm.prettysimpleshop.feature.ActionBarItemDetails;
 import com.robomwm.prettysimpleshop.feature.BuyConversation;
 import com.robomwm.prettysimpleshop.feature.DestroyShopOnBreak;
 import com.robomwm.prettysimpleshop.feature.ShowoffItem;
@@ -45,9 +44,7 @@ public class PrettySimpleShop extends JavaPlugin {
                 }
                 ShopListener shopListener = new ShopListener(plugin, shopAPI, economy, config);
                 if (config.getBoolean("showOffItemsFeature.enabled"))
-                    showoffItem = new ShowoffItem(plugin, shopAPI, config.getBoolean("showOffItemsFeature.showItemsName"));
-                if (config.getBoolean("showItemDetailsInActionBar"))
-                    new ActionBarItemDetails(plugin, shopAPI, economy);
+                    showoffItem = new ShowoffItem(plugin, economy, shopAPI, config.getBoolean("showOffItemsFeature.showItemsName"));
                 if (config.getBoolean("deleteShopWhenBroken"))
                     new DestroyShopOnBreak(plugin);
                 getCommand("shop").setExecutor(new HelpCommand(plugin));

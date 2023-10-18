@@ -40,7 +40,6 @@ public class ConfigManager {
         showOffItemsFeatureSection.addDefault("enabled", true);
         showOffItemsFeatureSection.addDefault("showItemsName", true);
 
-        config.addDefault("showItemDetailsInActionBar", true);
         config.addDefault("deleteShopWhenBroken", false);
         config.addDefault("useWorldWhitelist", false);
         config.addDefault("useBuyPrompt", true);

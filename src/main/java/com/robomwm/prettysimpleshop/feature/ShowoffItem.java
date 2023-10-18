@@ -9,6 +9,9 @@ import com.robomwm.prettysimpleshop.event.ShopOpenCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -41,14 +44,16 @@ import java.util.Set;
  * @author RoboMWM
  */
 public class ShowoffItem implements Listener {
-    private PrettySimpleShop plugin;
-    private ShopAPI shopAPI;
-    private Set<ItemDisplay> spawnedItems = new HashSet<>();
-    private ConfigManager config;
-    private boolean showItemName;
+    private final PrettySimpleShop plugin;
+    private final Economy economy;
+    private final ShopAPI shopAPI;
+    private final Set<ItemDisplay> spawnedItems = new HashSet<>();
+    private final ConfigManager config;
+    private final boolean showItemName;
 
-    public ShowoffItem(PrettySimpleShop plugin, ShopAPI shopAPI, boolean showItemName) {
+    public ShowoffItem(PrettySimpleShop plugin, Economy economy, ShopAPI shopAPI, boolean showItemName) {
         this.plugin = plugin;
+        this.economy = economy;
         config = plugin.getConfigManager();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.shopAPI = shopAPI;
@@ -138,12 +143,12 @@ public class ShowoffItem implements Listener {
         despawnItem(event.getShopInfo().getLocation().add(0.5, 1.15, 0.5));
     }
 
-    private boolean spawnItem(ShopInfo shopInfo) {
+    private void spawnItem(ShopInfo shopInfo) {
         Location location = shopInfo.getLocation().add(0.5, 1.15, 0.5);
         ItemStack itemStack = shopInfo.getItem();
         despawnItem(location);
         if (itemStack == null)
-            return false;
+            return;
         itemStack.setAmount(1);
 
         var item = location.getWorld().spawn(location, ItemDisplay.class, displayItem -> {
@@ -155,7 +160,8 @@ public class ShowoffItem implements Listener {
 
         if (showItemName) {
             var text = location.getWorld().spawn(location, TextDisplay.class, displayText -> {
-                displayText.text(PrettySimpleShop.getItemName(itemStack));
+                // TODO: make configurable
+                displayText.text(PrettySimpleShop.getItemName(itemStack).append(Component.newline()).append(Component.text(shopInfo.getItem().getAmount() + "x @ " + economy.format(shopInfo.getPrice()))));
                 displayText.setBillboard(Display.Billboard.VERTICAL);
                 displayText.setTransformation(new Transformation(
                         new Vector3f(0f, 0.4f, 0f),
@@ -172,7 +178,6 @@ public class ShowoffItem implements Listener {
 
         spawnedItems.add(item);
 
-        return true;
     }
 
     private void despawnItem(Location location) {
