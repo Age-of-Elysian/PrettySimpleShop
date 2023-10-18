@@ -116,8 +116,7 @@ public class BuyCommand implements CommandExecutor, Listener {
 
         config.sendMessage(player, "transactionCompleted", Integer.toString(itemStack.getAmount()), LegacyComponentSerializer.legacySection().serialize(PrettySimpleShop.getItemName(itemStack)), economy.format(itemStack.getAmount() * shopInfo.getPrice()));
 
-        shopInfo = new ShopInfo(shopInfo, itemStack.getAmount());
-        player.getServer().getPluginManager().callEvent(new ShopBoughtEvent(player, shopInfo));
+        player.getServer().getPluginManager().callEvent(new ShopBoughtEvent(player, shopInfo, itemStack.getAmount()));
 
         //int rows = ((itemStack.getAmount() / itemStack.getMaxStackSize()) + 1) / 9 + 1; //This causes a fully-loaded inventory to exceed 6 rows which CB enforces, I guess (it is possible to exceed 6 rows, the client will just show the extra rows below the top inventory)
         //So instead add divisor - 1 to dividend to round up while preserving integer division. https://stackoverflow.com/a/2422722

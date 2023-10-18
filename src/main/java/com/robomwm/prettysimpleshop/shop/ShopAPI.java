@@ -115,6 +115,10 @@ public class ShopAPI {
         setName(container, String.join(" ", name));
     }
 
+    public ShopInfo getShopInfo(Container container) {
+        return new ShopInfo(getLocation(container), getItemStack(container), getPrice(container));
+    }
+
     public double getPrice(Container container) {
         String theName = getName(container);
         if (theName == null || theName.isEmpty())

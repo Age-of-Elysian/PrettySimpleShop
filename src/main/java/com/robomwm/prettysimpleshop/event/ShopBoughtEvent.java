@@ -25,10 +25,12 @@ public class ShopBoughtEvent extends Event {
 
     private final Player player;
     private final ShopInfo shopInfo;
+    private final int amount;
 
-    public ShopBoughtEvent(Player player, ShopInfo shopInfo) {
+    public ShopBoughtEvent(Player player, ShopInfo shopInfo, int amount) {
         this.player = player;
         this.shopInfo = shopInfo;
+        this.amount = amount;
     }
 
     public Player getPlayer() {
@@ -37,5 +39,9 @@ public class ShopBoughtEvent extends Event {
 
     public ShopInfo getShopInfo() {
         return shopInfo;
+    }
+
+    public int getAmount() {
+        return amount;
     }
 }

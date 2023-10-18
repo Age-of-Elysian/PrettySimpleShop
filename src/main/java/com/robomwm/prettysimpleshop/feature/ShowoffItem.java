@@ -124,7 +124,8 @@ public class ShowoffItem implements Listener {
 
     @EventHandler
     private void onShopBought(ShopBoughtEvent event) {
-        spawnItem(event.getShopInfo());
+        ShopInfo shopInfo = shopAPI.getShopInfo(shopAPI.getContainer(event.getShopInfo().getLocation()));
+        spawnItem(shopInfo);
     }
 
     @EventHandler

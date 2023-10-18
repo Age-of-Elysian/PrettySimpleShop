@@ -187,7 +187,7 @@ public class ShopListener implements Listener {
             return;
         }
 
-        Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, new ShopInfo(shopAPI.getLocation(container), shopAPI.getItemStack(container), shopAPI.getPrice(container)), true));
+        Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, shopAPI.getShopInfo(container), true));
 
         double revenue = shopAPI.getRevenue(container, true);
 
@@ -207,7 +207,7 @@ public class ShopListener implements Listener {
         Container container = (Container) block.getState(false);
         if (!shopAPI.isShop(container))
             return;
-        Bukkit.getPluginManager().callEvent(new ShopBreakEvent(event.getPlayer(), new ShopInfo(shopAPI.getLocation(container), shopAPI.getItemStack(container), shopAPI.getPrice(container)), event));
+        Bukkit.getPluginManager().callEvent(new ShopBreakEvent(event.getPlayer(), shopAPI.getShopInfo(container), event));
         double revenue = shopAPI.getRevenue(container, true);
         if (revenue <= 0)
             return;
@@ -230,7 +230,7 @@ public class ShopListener implements Listener {
         if (!shopAPI.isShop(container))
             return;
 
-        Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, new ShopInfo(shopAPI.getLocation(container), shopAPI.getItemStack(container), shopAPI.getPrice(container)), false));
+        Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, shopAPI.getShopInfo(container), false));
     }
 
     //For now we'll just prevent explosions. Might consider dropping stored revenue on explosion later.
