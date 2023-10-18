@@ -67,7 +67,6 @@ public class ConfigManager {
         messageSection.addDefault("noPrice", "<red>This shop is not open for sale yet! <yellow>If you are the owner, use /setprice <price> to open this shop!");
         messageSection.addDefault("noStock", "<red>This shop is out of stock!");
         messageSection.addDefault("noMoney", "<red>Transaction canceled: Insufficient /money. Try again with a smaller quantity?");
-        messageSection.addDefault("noSpace", "<red>Warning: you might not have enough inventory space to store this item.");
         messageSection.addDefault("noShopSelected", "<red>Select a shop via left-clicking its chest.");
         messageSection.addDefault("shopModified", "<red>Transaction canceled: Shop was modified. Please try again.");
         messageSection.addDefault("transactionCanceled", "<red>Transaction canceled.");

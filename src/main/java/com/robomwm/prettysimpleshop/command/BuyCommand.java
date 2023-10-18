@@ -7,19 +7,16 @@ import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
 import com.robomwm.prettysimpleshop.shop.ShopListener;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.Map;
 
 import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.component;
 import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unparsed;
@@ -105,10 +102,6 @@ public class BuyCommand implements CommandExecutor, Listener {
         ItemStack itemStack = shopInfo.getItem();
         itemStack.setAmount(amount);
 
-        if (!hasInventorySpace(player, itemStack)) {
-            config.sendComponent(player, "noSpace");
-        }
-
         itemStack = shopAPI.performTransaction(shopAPI.getContainer(shopInfo.getLocation()), itemStack, shopInfo.getPrice());
         if (itemStack == null) {
             config.sendComponent(player, "shopModified");
@@ -127,77 +120,12 @@ public class BuyCommand implements CommandExecutor, Listener {
 
         player.getServer().getPluginManager().callEvent(new ShopBoughtEvent(player, shopInfo, itemStack.getAmount()));
 
-        //int rows = ((itemStack.getAmount() / itemStack.getMaxStackSize()) + 1) / 9 + 1; //This causes a fully-loaded inventory to exceed 6 rows which CB enforces, I guess (it is possible to exceed 6 rows, the client will just show the extra rows below the top inventory)
-        //So instead add divisor - 1 to dividend to round up while preserving integer division. https://stackoverflow.com/a/2422722
-        int slots = ((itemStack.getAmount() + (itemStack.getMaxStackSize() - 1)) / itemStack.getMaxStackSize());
-        int rows = (slots + 8) / 9;
-        ShopInventoryHolder shopInventoryHolder = new ShopInventoryHolder();
-        Inventory inventory = Bukkit.createInventory(
-                shopInventoryHolder,
-                rows * 9,
-                config.getComponent(
-                        "transactionCompletedWindow",
-                        component("item", shopAPI.getItemName(itemStack)),
-                        unparsed("amount", Integer.toString(itemStack.getAmount())),
-                        unparsed("price", economy.format(itemStack.getAmount() * shopInfo.getPrice()))
-                )
-        );
-        inventory.setMaxStackSize(itemStack.getMaxStackSize());
-        inventory.addItem(itemStack); //Note: mutates the itemstack's amount
-        shopInventoryHolder.setInventory(inventory);
-        player.openInventory(inventory);
+        Map<Integer, ItemStack> overflow = player.getInventory().addItem(itemStack);
 
-        //Map<Integer, ItemStack> leftovers = player.getInventory().addItem(itemStack);
+        for (ItemStack stack : overflow.values()) {
+            player.getWorld().dropItemNaturally(player.getLocation(), stack, item -> item.setOwner(player.getUniqueId()));
+        }
 
-//        if (!leftovers.isEmpty())
-//        {
-//            player.sendMessage("Somehow you bought more than you can hold and we didn't detect this. Please report this issue with the following debug info:");
-//            for (ItemStack itemStack1 : leftovers.values())
-//                player.sendMessage(itemStack1.toString());
-//            return true;
-//        }
         return true;
-    }
-
-    //Drop items not taken from the "collection window"
-    @EventHandler
-    private void onCloseShopInventory(InventoryCloseEvent event) {
-        if (!(event.getInventory().getHolder() instanceof ShopInventoryHolder)) {
-            return;
-        }
-
-        for (ItemStack itemStack : event.getInventory()) {
-            if (itemStack == null) {
-                continue;
-            }
-
-            event.getPlayer().getLocation().getWorld().dropItemNaturally(event.getPlayer().getLocation(), itemStack);
-        }
-    }
-
-    //https://www.spigotmc.org/threads/detecting-when-a-players-inventory-is-almost-full.132061/#post-1401285
-    private boolean hasInventorySpace(Player p, ItemStack item) {
-        int free = 0;
-        for (ItemStack i : p.getInventory()) {
-            if (i == null) {
-                free += item.getMaxStackSize();
-            } else if (i.isSimilar(item)) {
-                free += item.getMaxStackSize() - i.getAmount();
-            }
-        }
-        return free >= item.getAmount();
-    }
-}
-
-class ShopInventoryHolder implements InventoryHolder {
-    private Inventory inventory;
-
-    public void setInventory(Inventory inventory) {
-        this.inventory = inventory;
-    }
-
-    @Override
-    public Inventory getInventory() {
-        return inventory;
     }
 }
