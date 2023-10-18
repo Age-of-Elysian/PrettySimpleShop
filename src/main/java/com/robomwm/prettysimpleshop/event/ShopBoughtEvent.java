@@ -2,6 +2,7 @@ package com.robomwm.prettysimpleshop.event;
 
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -10,7 +11,7 @@ import org.bukkit.event.HandlerList;
  *
  * @author RoboMWM
  */
-public class ShopBoughtEvent extends Event {
+public class ShopBoughtEvent extends Event implements Cancellable {
     // Custom Event Requirements
     private static final HandlerList handlers = new HandlerList();
 
@@ -23,6 +24,7 @@ public class ShopBoughtEvent extends Event {
         return handlers;
     }
 
+    private boolean cancelled = false;
     private final Player player;
     private final ShopInfo shopInfo;
     private final int amount;
@@ -43,5 +45,15 @@ public class ShopBoughtEvent extends Event {
 
     public int getAmount() {
         return amount;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    @Override
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
     }
 }

@@ -18,8 +18,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-
 import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.component;
 import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unparsed;
 
@@ -39,7 +37,7 @@ public class BuyCommand implements CommandExecutor, Listener {
         this.config = plugin.getConfigManager();
         this.shopAPI = plugin.getShopAPI();
         this.economy = economy;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     @Override
@@ -119,7 +117,7 @@ public class BuyCommand implements CommandExecutor, Listener {
 
         economy.withdrawPlayer(player, output.getAmount() * shopInfo.getPrice());
 
-        player.getServer().getPluginManager().callEvent(new ShopBoughtEvent(player, shopInfo, output.getAmount()));
+        Bukkit.getPluginManager().callEvent(new ShopBoughtEvent(player, shopInfo, output.getAmount()));
 
         config.sendComponent(
                 player,
@@ -129,10 +127,14 @@ public class BuyCommand implements CommandExecutor, Listener {
                 unparsed("price", economy.format(output.getAmount() * shopInfo.getPrice()))
         );
 
-        Map<Integer, ItemStack> overflow = player.getInventory().addItem(output);
+        while (output.getAmount() > 0) {
+            int quantity = Math.min(output.getAmount(), output.getMaxStackSize());
+            output.subtract(quantity);
 
-        for (ItemStack stack : overflow.values()) {
-            player.getWorld().dropItemNaturally(player.getLocation(), stack, item -> item.setOwner(player.getUniqueId()));
+            player.getWorld().dropItem(player.getLocation(), output.asQuantity(quantity), item -> {
+                item.setPickupDelay(0);
+                item.setOwner(player.getUniqueId());
+            });
         }
     }
 }

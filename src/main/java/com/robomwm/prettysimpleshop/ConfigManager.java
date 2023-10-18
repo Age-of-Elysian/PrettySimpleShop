@@ -5,10 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.Tag;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -93,11 +90,13 @@ public class ConfigManager {
 
         if (config.getBoolean("useWorldWhitelist")) {
             for (String worldName : config.getStringList("worldWhitelist")) {
-                World world = instance.getServer().getWorld(worldName);
-                if (world == null)
+                World world = Bukkit.getWorld(worldName);
+
+                if (world == null) {
                     instance.getLogger().warning("World " + worldName + " does not exist.");
-                else
+                } else {
                     whitelistedWorlds.add(world);
+                }
             }
         }
 
