@@ -69,12 +69,14 @@ public class ShowoffItem implements Listener {
     }
 
     private void loadShopItemsInChunk(Chunk chunk) {
-        Collection<BlockState> snapshot = chunk.getTileEntities(block -> config.isShopBlock(block.getType()), false);
+        Collection<BlockState> states = chunk.getTileEntities(block -> config.isShopBlock(block.getType()), false);
 
-        for (BlockState state : snapshot) {
-            Container container = shopAPI.getContainer(state.getLocation());
+        for (BlockState state : states) {
+            if (!(state instanceof Container container)) {
+                continue;
+            }
 
-            if (container == null || !shopAPI.isShop(container, false)) {
+            if (!shopAPI.isShop(container, false)) {
                 continue;
             }
 
@@ -100,11 +102,11 @@ public class ShowoffItem implements Listener {
         }
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            InventoryHolder holder = ((Container) event.getBlock().getState()).getInventory().getHolder();
+            InventoryHolder holder = ((Container) event.getBlock().getState(false)).getInventory().getHolder();
 
             if (holder instanceof DoubleChest doubleChest) {
-                despawnItem(((Chest) (doubleChest.getLeftSide())).getLocation().add(0.5, 1.15, 0.5));
-                despawnItem(((Chest) (doubleChest.getRightSide())).getLocation().add(0.5, 1.15, 0.5));
+                despawnItem(((Chest) (doubleChest.getLeftSide(false))).getLocation().add(0.5, 1.15, 0.5));
+                despawnItem(((Chest) (doubleChest.getRightSide(false))).getLocation().add(0.5, 1.15, 0.5));
             }
         });
     }

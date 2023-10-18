@@ -72,7 +72,7 @@ public class ShopAPI {
             return false;
         if (!config.isShopBlock((block.getType())))
             return false;
-        Container container = (Container) block.getState();
+        Container container = (Container) block.getState(false);
         return isShop(container, includeNew);
     }
 
@@ -89,7 +89,7 @@ public class ShopAPI {
         return name.length == 5 && name[4].startsWith("\u00A7\u00A7"); //could also check price and sales keyword too
     }
 
-    public boolean setPrice(Container container, double newPrice) {
+    public void setPrice(Container container, double newPrice) {
         String theName = getName(container);
         PrettySimpleShop.debug("setPrice:" + theName + ";");
         //Now any container can be a shop. May add configuration for this if desired.
@@ -107,13 +107,15 @@ public class ShopAPI {
 //            return false;
 
         //Shop not named, or named something else (i.e. basically turn it into a shop no matter what)
-        if (name == null || !name[0].equals(priceKey))
-            return setName(container, priceKey + " " + newPrice + " " + salesKey + " 0 \u00A7\u00A7");
+        if (name == null || !name[0].equals(priceKey)) {
+            setName(container, priceKey + " " + newPrice + " " + salesKey + " 0 \u00A7\u00A7");
+            return;
+        }
 
         //Otherwise, just change the price portion of the string
         name[1] = Double.toString(newPrice);
 
-        return setName(container, StringUtils.join(name, " "));
+        setName(container, StringUtils.join(name, " "));
     }
 
     public double getPrice(Container container) {
@@ -141,8 +143,7 @@ public class ShopAPI {
         revenue = Double.parseDouble(name[4].substring(2));
         if (reset) {
             name[4] = "\u00A7\u00A7";
-            if (!setName(container, StringUtils.join(name, " ")))
-                return 0;
+            setName(container, StringUtils.join(name, " "));
         }
         return revenue;
     }
@@ -165,10 +166,10 @@ public class ShopAPI {
      * @return the block's state as a Container, or null if not a Nameable Container.
      */
     public Container getContainer(Location location) {
-        location.getBlock();
-        BlockState state = location.getBlock().getState();
-        if (state instanceof Container)
-            return (Container) state;
+        BlockState state = location.getBlock().getState(false);
+        if (state instanceof Container container) {
+            return container;
+        }
         return null;
     }
 
@@ -193,30 +194,29 @@ public class ShopAPI {
         if (isDoubleChest(container)) {
             DoubleChest doubleChest = (DoubleChest) container.getInventory().getHolder();
             //Left side takes precedence, but we'll override if the right side is a shop and the left side isn't
-            if (!isShopFormat(((Chest) doubleChest.getLeftSide()).getCustomName(), false) && isShopFormat((((Chest) doubleChest.getRightSide())).getCustomName(), true))
-                return ((Chest) doubleChest.getRightSide()).getCustomName();
-            return ((Chest) doubleChest.getLeftSide()).getCustomName();
+            if (!isShopFormat(((Chest) doubleChest.getLeftSide(false)).getCustomName(), false) && isShopFormat((((Chest) doubleChest.getRightSide(false))).getCustomName(), true))
+                return ((Chest) doubleChest.getRightSide(false)).getCustomName();
+            return ((Chest) doubleChest.getLeftSide(false)).getCustomName();
         }
 
         return container.getCustomName();
     }
 
-    private boolean setName(Container actualContainer, String name) {
+    private void setName(Container actualContainer, String name) {
         if (actualContainer == null)
-            return false;
+            return;
         if (!isDoubleChest(actualContainer)) {
             PrettySimpleShop.debug("setName: " + name);
             actualContainer.setCustomName(name);
-            return actualContainer.update();
+            return;
         }
         //Thanks Bukkit
         DoubleChest doubleChest = (DoubleChest) actualContainer.getInventory().getHolder();
-        Chest leftChest = ((Chest) doubleChest.getLeftSide());
+        Chest leftChest = (Chest) doubleChest.getLeftSide(false);
         leftChest.setCustomName(name);
-        Chest rightChest = ((Chest) doubleChest.getRightSide());
+        Chest rightChest = (Chest) doubleChest.getRightSide(false);
         rightChest.setCustomName(name);
         PrettySimpleShop.debug("setName: " + name);
-        return leftChest.update() && rightChest.update();
     }
 
     /**
@@ -254,8 +254,7 @@ public class ShopAPI {
         PrettySimpleShop.debug("rev" + revenue);
         revenue += shopItem.getAmount() * price;
         name[4] = "\u00A7\u00A7" + revenue;
-        if (!setName(container, StringUtils.join(name, " ")))
-            return null;
+        setName(container, StringUtils.join(name, " "));
 
         Inventory inventory = container.getInventory();
         inventory.removeItem(shopItem);

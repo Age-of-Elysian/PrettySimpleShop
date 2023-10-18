@@ -116,7 +116,7 @@ public class ShopListener implements Listener {
     public boolean selectShop(Player player, Block block, boolean wantToBuy) {
         if (!config.isShopBlock(block.getType()))
             return false;
-        Container container = (Container) block.getState();
+        Container container = (Container) block.getState(false);
         if (!shopAPI.isShop(container))
             return false;
 
@@ -204,7 +204,7 @@ public class ShopListener implements Listener {
         Block block = event.getBlock();
         if (!config.isShopBlock(block.getType()))
             return;
-        Container container = (Container) block.getState();
+        Container container = (Container) block.getState(false);
         if (!shopAPI.isShop(container))
             return;
         Bukkit.getPluginManager().callEvent(new ShopBreakEvent(event.getPlayer(), new ShopInfo(shopAPI.getLocation(container), shopAPI.getItemStack(container), shopAPI.getPrice(container)), event));
@@ -236,7 +236,7 @@ public class ShopListener implements Listener {
     //For now we'll just prevent explosions. Might consider dropping stored revenue on explosion later.
     @EventHandler(ignoreCancelled = true)
     private void onExplode(EntityExplodeEvent event) {
-        event.blockList().removeIf(block -> config.isShopBlock(block.getType()) && shopAPI.isShop((Container) block.getState()));
+        event.blockList().removeIf(block -> config.isShopBlock(block.getType()) && shopAPI.isShop((Container) block.getState(false)));
     }
 
     //Commands cuz well all the data's here so yea

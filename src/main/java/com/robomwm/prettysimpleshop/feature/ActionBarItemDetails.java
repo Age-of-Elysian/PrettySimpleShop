@@ -45,7 +45,7 @@ public class ActionBarItemDetails implements Listener {
         if (!shopAPI.isShop(block, false))
             return false;
 
-        Container shopBlock = (Container) block.getState();
+        Container shopBlock = (Container) block.getState(false);
 
         ItemStack item = shopAPI.getItemStack(shopBlock);
 
