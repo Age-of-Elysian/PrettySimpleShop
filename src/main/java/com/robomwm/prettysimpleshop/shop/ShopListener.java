@@ -205,11 +205,15 @@ public class ShopListener implements Listener {
             return;
         Bukkit.getPluginManager().callEvent(new ShopBreakEvent(event.getPlayer(), shopAPI.getShopInfo(container), event));
         double revenue = shopAPI.getRevenue(container, true);
-        if (revenue <= 0)
-            return;
-        Player player = event.getPlayer();
-        economy.depositPlayer(player, revenue);
-        config.sendComponent(player, "collectRevenue", unparsed("revenue", economy.format(revenue)));
+
+        if (revenue > 0) {
+            Player player = event.getPlayer();
+            economy.depositPlayer(player, revenue);
+            config.sendComponent(player, "collectRevenue", unparsed("revenue", economy.format(revenue)));
+        }
+
+        // reset name so the drop is unnamed
+        container.customName(null);
     }
 
     //Purely for calling the dumb event
