@@ -143,7 +143,7 @@ public class ShopListener implements Listener {
                 player,
                 "buyPrompt",
                 component("item", item.displayName()),
-                unparsed("price", economy.format(shopInfo.getPrice())),
+                unparsed("price", economy.format(price)),
                 unparsed("available", Integer.toString(item.getAmount()))
         );
 

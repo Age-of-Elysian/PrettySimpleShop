@@ -1,7 +1,6 @@
 package com.robomwm.prettysimpleshop.command;
 
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

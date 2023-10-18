@@ -165,7 +165,7 @@ public class ShowoffItem implements Listener {
                 displayText.text(
                         config.getComponent(
                                 "hologramFormat",
-                                component("item", itemStack.displayName()),
+                                component("item", shopAPI.getItemName(itemStack)),
                                 unparsed("amount", Integer.toString(shopInfo.getItem().getAmount())),
                                 unparsed("price", economy.format(shopInfo.getPrice()))
                         )

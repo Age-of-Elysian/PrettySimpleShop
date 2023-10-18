@@ -1,7 +1,5 @@
 package com.robomwm.prettysimpleshop.shop;
 
-import com.robomwm.prettysimpleshop.PrettySimpleShop;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 

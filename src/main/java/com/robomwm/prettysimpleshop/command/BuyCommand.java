@@ -137,7 +137,7 @@ public class BuyCommand implements CommandExecutor, Listener {
                 rows * 9,
                 config.getComponent(
                         "transactionCompletedWindow",
-                        component("item", itemStack.displayName()),
+                        component("item", shopAPI.getItemName(itemStack)),
                         unparsed("amount", Integer.toString(itemStack.getAmount())),
                         unparsed("price", economy.format(itemStack.getAmount() * shopInfo.getPrice()))
                 )

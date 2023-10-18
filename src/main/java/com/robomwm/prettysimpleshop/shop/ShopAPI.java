@@ -2,11 +2,14 @@ package com.robomwm.prettysimpleshop.shop;
 
 import com.robomwm.prettysimpleshop.ConfigManager;
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * Created on 2/6/2018.
@@ -261,5 +264,21 @@ public class ShopAPI {
         inventory.removeItem(shopItem);
 
         return shopItem;
+    }
+
+    public Component getItemName(ItemStack item) {
+        if (item.hasItemMeta()) {
+            ItemMeta meta = item.getItemMeta();
+
+            if (meta.hasDisplayName()) {
+                return meta.displayName();
+            }
+
+            if (meta instanceof BookMeta bookMeta) {
+                return bookMeta.title();
+            }
+        }
+
+        return Component.translatable(item);
     }
 }
