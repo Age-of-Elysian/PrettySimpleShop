@@ -63,6 +63,12 @@ public class BuyCommand implements CommandExecutor, Listener {
                 return false;
             }
 
+            // TODO: make distance configurable
+            if (!location.isChunkLoaded() || location.distance(player.getLocation()) > 20) {
+                config.sendComponent(player, "tooFar");
+                return false;
+            }
+
             if (!shopListener.selectShop(player, location.getBlock())) {
                 config.sendComponent(player, "noShopThere");
             }
@@ -92,6 +98,12 @@ public class BuyCommand implements CommandExecutor, Listener {
 
         if (shopInfo == null) {
             config.sendComponent(player, "noShopSelected");
+            return;
+        }
+
+        // TODO: make configurable
+        if (!shopInfo.getLocation().isChunkLoaded() || shopInfo.getLocation().distance(player.getLocation()) > 20) {
+            config.sendComponent(player, "tooFar");
             return;
         }
 
@@ -129,12 +141,13 @@ public class BuyCommand implements CommandExecutor, Listener {
 
         while (output.getAmount() > 0) {
             int quantity = Math.min(output.getAmount(), output.getMaxStackSize());
-            output.subtract(quantity);
 
             player.getWorld().dropItem(player.getLocation(), output.asQuantity(quantity), item -> {
                 item.setPickupDelay(0);
                 item.setOwner(player.getUniqueId());
             });
+
+            output.subtract(quantity);
         }
     }
 }
