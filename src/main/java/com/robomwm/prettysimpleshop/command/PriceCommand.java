@@ -5,6 +5,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created on 2/8/2018.
@@ -18,25 +19,27 @@ public class PriceCommand implements CommandExecutor {
         this.shopListener = shopListener;
     }
 
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player))
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (!(sender instanceof Player player)) {
             return false;
+        }
+
         if (args.length < 1) {
-            shopListener.priceCommand((Player) sender, null);
+            shopListener.priceCommand(player, null);
             return false;
         }
 
         double price;
 
         try {
-            price = Double.parseDouble(args[0]);
-            price = Math.floor(price * 100) / 100;
+            price = Math.floor(Double.parseDouble(args[0]) * 100) / 100;
         } catch (Throwable rock) {
-            shopListener.priceCommand((Player) sender, null);
+            shopListener.priceCommand(player, null);
             return false;
         }
 
-        shopListener.priceCommand((Player) sender, price);
+        shopListener.priceCommand(player, price);
         return true;
     }
 }

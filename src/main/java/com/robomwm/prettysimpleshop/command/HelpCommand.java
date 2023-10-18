@@ -4,6 +4,7 @@ import com.robomwm.prettysimpleshop.PrettySimpleShop;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created on 2/8/2018.
@@ -17,7 +18,8 @@ public class HelpCommand implements CommandExecutor {
         this.plugin = plugin;
     }
 
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         plugin.getConfigManager().sendComponent(sender, "shopCommand");
         return true;
     }

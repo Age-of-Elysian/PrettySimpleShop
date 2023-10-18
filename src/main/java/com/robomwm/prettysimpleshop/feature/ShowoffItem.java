@@ -56,22 +56,24 @@ public class ShowoffItem implements Listener {
         this.plugin = plugin;
         this.economy = economy;
         config = plugin.getConfigManager();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        Bukkit.getPluginManager().registerEvents(this, plugin);
         this.shopAPI = shopAPI;
         this.showItemName = showItemName;
-        for (World world : plugin.getServer().getWorlds())
-            for (Chunk chunk : world.getLoadedChunks())
+
+        for (World world : Bukkit.getWorlds()) {
+            for (Chunk chunk : world.getLoadedChunks()) {
                 loadShopItemsInChunk(chunk);
+            }
+        }
     }
 
     @EventHandler
     private void onChunkLoad(ChunkLoadEvent event) {
-        if (!config.isWhitelistedWorld(event.getWorld()))
+        if (event.isNewChunk() || !config.isWhitelistedWorld(event.getWorld())) {
             return;
-        final Chunk chunk = event.getChunk();
-        if (event.isNewChunk())
-            return;
-        loadShopItemsInChunk(chunk);
+        }
+
+        loadShopItemsInChunk(event.getChunk());
     }
 
     private void loadShopItemsInChunk(Chunk chunk) {
@@ -149,8 +151,11 @@ public class ShowoffItem implements Listener {
         Location location = shopInfo.getLocation().add(0.5, 1.15, 0.5);
         ItemStack itemStack = shopInfo.getItem();
         despawnItem(location);
-        if (itemStack == null)
+
+        if (itemStack == null) {
             return;
+        }
+
         itemStack.setAmount(1);
 
         var item = location.getWorld().spawn(location, ItemDisplay.class, displayItem -> {

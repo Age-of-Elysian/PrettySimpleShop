@@ -38,14 +38,13 @@ public class ConfigManager {
         config = instance.getConfig();
 
         showOffItemsFeatureSection = config.getConfigurationSection("showOffItemsFeature");
-        if (showOffItemsFeatureSection == null)
+        if (showOffItemsFeatureSection == null) {
             showOffItemsFeatureSection = config.createSection("showOffItemsFeature");
+        }
         showOffItemsFeatureSection.addDefault("enabled", true);
         showOffItemsFeatureSection.addDefault("showItemsName", true);
 
         config.addDefault("useWorldWhitelist", false);
-        config.addDefault("useBuyPrompt", true);
-        config.addDefault("alwaysShowBuyPrompt", true);
 
         List<String> whitelist = List.of("mall");
         config.addDefault("worldWhitelist", whitelist);
@@ -167,5 +166,4 @@ public class ConfigManager {
     private String formatter(String stringToFormat) {
         return ChatColor.translateAlternateColorCodes('&', stringToFormat);
     }
-
 }

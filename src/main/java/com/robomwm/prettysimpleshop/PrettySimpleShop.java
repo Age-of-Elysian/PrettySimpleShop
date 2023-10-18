@@ -8,6 +8,7 @@ import com.robomwm.prettysimpleshop.feature.ShowoffItem;
 import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopListener;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -29,31 +30,28 @@ public class PrettySimpleShop extends JavaPlugin {
         debug = config.isDebug();
         shopAPI = new ShopAPI(config.getString("shopName"), config.getString("price"), config.getString("sales"));
 
-        PrettySimpleShop plugin = this;
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                economy = getEconomy();
-                if (economy == null) {
-                    getLogger().severe("No economy plugin was found. Disabling.");
-                    getServer().getPluginManager().disablePlugin(plugin);
-                    return;
-                }
-                ShopListener shopListener = new ShopListener(plugin, shopAPI, economy, config);
-                if (config.getBoolean("showOffItemsFeature.enabled"))
-                    showoffItem = new ShowoffItem(plugin, economy, shopAPI, config.getBoolean("showOffItemsFeature.showItemsName"));
-                getCommand("shop").setExecutor(new HelpCommand(plugin));
-                getCommand("setprice").setExecutor(new PriceCommand(shopListener));
-                getCommand("buy").setExecutor(new BuyCommand(plugin, shopListener, economy));
-                if (config.getBoolean("useBuyPrompt"))
-                    new BuyConversation(plugin);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
+            economy = getEconomy();
+            if (economy == null) {
+                getLogger().severe("No economy plugin was found. Disabling.");
+                Bukkit.getPluginManager().disablePlugin(this);
+                return;
             }
-        }.runTask(this);
+            ShopListener shopListener = new ShopListener(this, shopAPI, economy, config);
+            if (config.getBoolean("showOffItemsFeature.enabled")) {
+                showoffItem = new ShowoffItem(this, economy, shopAPI, config.getBoolean("showOffItemsFeature.showItemsName"));
+            }
+            getCommand("shop").setExecutor(new HelpCommand(this));
+            getCommand("setprice").setExecutor(new PriceCommand(shopListener));
+            getCommand("buy").setExecutor(new BuyCommand(this, shopListener, economy));
+            new BuyConversation(this);
+        });
     }
 
     public void onDisable() {
-        if (showoffItem != null)
+        if (showoffItem != null) {
             showoffItem.despawnAll();
+        }
     }
 
     public ShopAPI getShopAPI() {
@@ -65,23 +63,27 @@ public class PrettySimpleShop extends JavaPlugin {
     }
 
     public static void debug(Object message) {
-        if (debug)
+        if (debug) {
             System.out.println("[PrettySimpleShop debug] " + message);
+        }
     }
 
     private Economy getEconomy() {
-        if (economy != null)
+        if (economy != null) {
             return economy;
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+        }
+
+        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
             return null;
         }
-        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+
+        RegisteredServiceProvider<Economy> rsp = Bukkit.getServicesManager().getRegistration(Economy.class);
+
         if (rsp == null) {
             return null;
         }
+
         economy = rsp.getProvider();
         return economy;
     }
-
-
 }

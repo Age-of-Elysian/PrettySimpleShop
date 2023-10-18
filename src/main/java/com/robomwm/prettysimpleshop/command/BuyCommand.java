@@ -7,6 +7,7 @@ import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
 import com.robomwm.prettysimpleshop.shop.ShopListener;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -15,6 +16,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -40,18 +42,21 @@ public class BuyCommand implements CommandExecutor, Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player) || args.length < 1) {
             return false;
         }
 
-        if (args.length == 4) //Selecting a shop via clicking
-        {
-            World world = player.getServer().getWorld(args[0]);
+        // selecting a shop via clicking
+        if (args.length == 4) {
+            World world = Bukkit.getWorld(args[0]);
+
             if (world == null || player.getWorld() != world) {
                 config.sendComponent(player, "tooFar");
                 return false;
             }
+
             Location location;
 
             try {
@@ -60,8 +65,10 @@ public class BuyCommand implements CommandExecutor, Listener {
                 return false;
             }
 
-            if (!shopListener.selectShop(player, location.getBlock(), true))
+            if (!shopListener.selectShop(player, location.getBlock())) {
                 config.sendComponent(player, "noShopThere");
+            }
+
             return true;
         }
 
@@ -78,54 +85,54 @@ public class BuyCommand implements CommandExecutor, Listener {
             return false;
         }
 
-        buyCommand(player, quantity, args.length == 2 && args[1].equalsIgnoreCase("confirm"));
+        buyCommand(player, quantity);
         return true;
     }
 
-    public boolean buyCommand(Player player, int amount, boolean confirm) {
+    public void buyCommand(Player player, int amount) {
         ShopInfo shopInfo = shopListener.getSelectedShop(player);
+
         if (shopInfo == null) {
             config.sendComponent(player, "noShopSelected");
-            return false;
+            return;
         }
 
         if (shopInfo.getPrice() < 0) {
             config.sendComponent(player, "noPrice");
-            return false;
+            return;
         }
 
         if (economy.getBalance(player) < amount * shopInfo.getPrice()) {
             config.sendComponent(player, "noMoney");
-            return false;
+            return;
         }
 
-        ItemStack itemStack = shopInfo.getItem();
-        itemStack.setAmount(amount);
+        ItemStack input = shopInfo.getItem();
+        input.setAmount(amount);
 
-        itemStack = shopAPI.performTransaction(shopAPI.getContainer(shopInfo.getLocation()), itemStack, shopInfo.getPrice());
-        if (itemStack == null) {
+        ItemStack output = shopAPI.performTransaction(shopAPI.getContainer(shopInfo.getLocation()), input, shopInfo.getPrice());
+
+        if (output == null) {
             config.sendComponent(player, "shopModified");
-            return false;
+            return;
         }
 
-        economy.withdrawPlayer(player, itemStack.getAmount() * shopInfo.getPrice());
+        economy.withdrawPlayer(player, output.getAmount() * shopInfo.getPrice());
+
+        player.getServer().getPluginManager().callEvent(new ShopBoughtEvent(player, shopInfo, output.getAmount()));
 
         config.sendComponent(
                 player,
                 "transactionCompleted",
-                component("item", itemStack.displayName()),
-                unparsed("amount", Integer.toString(itemStack.getAmount())),
-                unparsed("price", economy.format(itemStack.getAmount() * shopInfo.getPrice()))
+                component("item", output.displayName()),
+                unparsed("amount", Integer.toString(output.getAmount())),
+                unparsed("price", economy.format(output.getAmount() * shopInfo.getPrice()))
         );
 
-        player.getServer().getPluginManager().callEvent(new ShopBoughtEvent(player, shopInfo, itemStack.getAmount()));
-
-        Map<Integer, ItemStack> overflow = player.getInventory().addItem(itemStack);
+        Map<Integer, ItemStack> overflow = player.getInventory().addItem(output);
 
         for (ItemStack stack : overflow.values()) {
             player.getWorld().dropItemNaturally(player.getLocation(), stack, item -> item.setOwner(player.getUniqueId()));
         }
-
-        return true;
     }
 }

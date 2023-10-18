@@ -38,7 +38,6 @@ import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unpa
  * @author RoboMWM
  */
 public class ShopListener implements Listener {
-    private final JavaPlugin instance;
     private final ShopAPI shopAPI;
     private final Economy economy;
     private final Map<Player, ShopInfo> selectedShop = new HashMap<>();
@@ -46,11 +45,10 @@ public class ShopListener implements Listener {
     private final ConfigManager config;
 
 
-    public ShopListener(JavaPlugin plugin, ShopAPI shopAPI, Economy economy, ConfigManager configManager) {
-        instance = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    public ShopListener(JavaPlugin plugin, ShopAPI shopAPI, Economy economy, ConfigManager config) {
+        Bukkit.getPluginManager().registerEvents(this, plugin);
         this.shopAPI = shopAPI;
-        this.config = configManager;
+        this.config = config;
         this.economy = economy;
     }
 
@@ -80,7 +78,7 @@ public class ShopListener implements Listener {
             return;
         if (!isEnabledWorld(event.getPlayer().getWorld()))
             return;
-        selectShop(player, event.getClickedBlock(), config.getBoolean("alwaysShowBuyPrompt"));
+        selectShop(player, event.getClickedBlock());
     }
 
     //Select shop if interact with shop block is denied
@@ -93,10 +91,10 @@ public class ShopListener implements Listener {
             return;
         if (!isEnabledWorld(event.getPlayer().getWorld()))
             return;
-        selectShop(player, event.getClickedBlock(), config.getBoolean("alwaysShowBuyPrompt"));
+        selectShop(player, event.getClickedBlock());
     }
 
-    //Clears any set price the player may have inadvertently forgotten to remove
+    // clear any set price the player may have inadvertently forgotten to remove
     @EventHandler(priority = EventPriority.HIGHEST)
     private void clearSetPrice(PlayerInteractEvent event) {
         if (event.useInteractedBlock() == Event.Result.DENY) {
@@ -112,12 +110,16 @@ public class ShopListener implements Listener {
         priceCommand(event.getPlayer(), null);
     }
 
-    public boolean selectShop(Player player, Block block, boolean wantToBuy) {
-        if (!config.isShopBlock(block.getType()))
+    public boolean selectShop(Player player, Block block) {
+        if (!config.isShopBlock(block.getType())) {
             return false;
+        }
+
         Container container = (Container) block.getState(false);
-        if (!shopAPI.isShop(container))
+
+        if (!shopAPI.isShop(container)) {
             return false;
+        }
 
         double price = shopAPI.getPrice(container);
 
@@ -135,7 +137,7 @@ public class ShopListener implements Listener {
 
         ShopInfo shopInfo = new ShopInfo(shopAPI.getLocation(container), item, price);
 
-        ShopSelectEvent shopSelectEvent = new ShopSelectEvent(player, shopInfo, shopInfo.equals(selectedShop.get(player)) || wantToBuy);
+        ShopSelectEvent shopSelectEvent = new ShopSelectEvent(player, shopInfo);
 
         selectedShop.put(player, shopInfo);
 

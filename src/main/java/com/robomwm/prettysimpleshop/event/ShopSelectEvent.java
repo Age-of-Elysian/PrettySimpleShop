@@ -25,19 +25,10 @@ public class ShopSelectEvent extends Event {
 
     private final Player player;
     private final ShopInfo shopInfo;
-    private final boolean intentToBuy;
 
-    public ShopSelectEvent(Player player, ShopInfo shopInfo, boolean intentToBuy) {
+    public ShopSelectEvent(Player player, ShopInfo shopInfo) {
         this.player = player;
         this.shopInfo = shopInfo;
-        this.intentToBuy = intentToBuy;
-    }
-
-    /**
-     * @return whether the player's selection indicates an interest to buy
-     */
-    public boolean hasIntentToBuy() {
-        return intentToBuy;
     }
 
     public Player getPlayer() {

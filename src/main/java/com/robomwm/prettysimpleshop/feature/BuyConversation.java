@@ -4,7 +4,7 @@ import com.robomwm.prettysimpleshop.PrettySimpleShop;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.entity.Player;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -12,9 +12,9 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class BuyConversation implements Listener {
     private final JavaPlugin plugin;
-    private final Set<Player> buyPrompt = ConcurrentHashMap.newKeySet(); //thread safe????????
+    private final Set<UUID> buyPrompt = ConcurrentHashMap.newKeySet();
 
     public BuyConversation(PrettySimpleShop plugin) {
         this.plugin = plugin;
@@ -36,44 +36,42 @@ public class BuyConversation implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     private void onShopSelectWithIntent(ShopSelectEvent event) {
-        Player player = event.getPlayer();
-        buyPrompt.remove(player);
-        if (!event.hasIntentToBuy())
-            return;
-        buyPrompt.add(player);
+        buyPrompt.add(event.getPlayer().getUniqueId());
     }
 
     @EventHandler(ignoreCancelled = true)
     private void onCommand(PlayerCommandPreprocessEvent event) {
-        buyPrompt.remove(event.getPlayer());
+        buyPrompt.remove(event.getPlayer().getUniqueId());
     }
 
     @EventHandler
     private void onQuit(PlayerQuitEvent event) {
-        buyPrompt.remove(event.getPlayer());
+        buyPrompt.remove(event.getPlayer().getUniqueId());
     }
 
     @EventHandler
     private void onChangeWorlds(PlayerChangedWorldEvent event) {
-        buyPrompt.remove(event.getPlayer());
+        buyPrompt.remove(event.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     private void onChat(AsyncChatEvent event) {
-        if (!buyPrompt.remove(event.getPlayer()))
+        if (!buyPrompt.remove(event.getPlayer().getUniqueId())) {
             return;
+        }
+
         try {
             String message = PlainTextComponentSerializer.plainText().serialize(event.originalMessage());
             int amount = Integer.parseInt(message);
-            if (amount <= 0)
+
+            if (amount <= 0) {
                 return;
+            }
+
             event.setCancelled(true);
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    event.getPlayer().performCommand("buy " + amount); //TODO: call directly
-                }
-            }.runTask(plugin);
+
+            // TODO: run directly
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> event.getPlayer().performCommand("buy " + amount));
         } catch (Throwable ignored) {
         }
     }
