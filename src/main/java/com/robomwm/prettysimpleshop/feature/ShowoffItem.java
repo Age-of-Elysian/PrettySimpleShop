@@ -151,7 +151,7 @@ public class ShowoffItem implements Listener {
 
         var item = location.getWorld().spawn(location, ItemDisplay.class, displayItem -> {
             displayItem.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GROUND);
-            displayItem.setItemStack(itemStack);
+            displayItem.setItemStack(itemStack.asOne());
             displayItem.setBillboard(Display.Billboard.VERTICAL);
             displayItem.setPersistent(false);
         });
@@ -162,7 +162,7 @@ public class ShowoffItem implements Listener {
                         config.getComponent(
                                 "hologramFormat",
                                 component("item", ShopUtil.getItemName(itemStack)),
-                                unparsed("amount", Integer.toString(shopInfo.getItem().getAmount())),
+                                unparsed("amount", Integer.toString(itemStack.getAmount())),
                                 unparsed("price", economy.format(shopInfo.getPrice()))
                         )
                 );
