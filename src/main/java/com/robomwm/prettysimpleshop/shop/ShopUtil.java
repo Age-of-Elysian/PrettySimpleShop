@@ -215,6 +215,10 @@ public class ShopUtil {
     public static ItemStack performTransaction(Container container, ItemStack input, double price) {
         ShopInfo shopInfo = getShopInfo(container);
 
+        if (shopInfo == null) {
+            return null;
+        }
+
         //Verify price
         PrettySimpleShop.debug(shopInfo.getPrice() + " " + price);
         if (shopInfo.getPrice() != price) {
