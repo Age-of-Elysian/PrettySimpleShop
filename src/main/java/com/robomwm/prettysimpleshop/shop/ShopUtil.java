@@ -240,7 +240,8 @@ public class ShopUtil {
         split[3] = Long.toString(Long.parseLong(split[3]) + output.getAmount());
         PrettySimpleShop.debug("rev" + shopInfo.getRevenue());
         double revenue = shopInfo.getRevenue() + output.getAmount() * price;
-        split[4] = "§§" + revenue;
+        // trailing + to avoid color
+        split[4] = "§§+" + revenue;
         setName(container, String.join(" ", split));
 
         Inventory inventory = container.getInventory();

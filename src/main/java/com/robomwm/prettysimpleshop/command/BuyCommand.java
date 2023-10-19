@@ -5,6 +5,7 @@ import com.robomwm.prettysimpleshop.PrettySimpleShop;
 import com.robomwm.prettysimpleshop.event.ShopBoughtEvent;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
 import com.robomwm.prettysimpleshop.shop.ShopListener;
+import com.robomwm.prettysimpleshop.shop.ShopUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -115,7 +116,7 @@ public class BuyCommand implements CommandExecutor, Listener {
 
         ItemStack input = shopInfo.getItem().asQuantity(amount);
 
-        ItemStack output = com.robomwm.prettysimpleshop.shop.ShopUtil.performTransaction(com.robomwm.prettysimpleshop.shop.ShopUtil.getContainer(shopInfo.getLocation()), input, shopInfo.getPrice());
+        ItemStack output = ShopUtil.performTransaction(ShopUtil.getContainer(shopInfo.getLocation()), input, shopInfo.getPrice());
 
         if (output == null) {
             config.sendComponent(player, "shopModified");
