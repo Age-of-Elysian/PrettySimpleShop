@@ -7,18 +7,16 @@ import com.robomwm.prettysimpleshop.event.ShopBoughtEvent;
 import com.robomwm.prettysimpleshop.event.ShopBreakEvent;
 import com.robomwm.prettysimpleshop.event.ShopOpenCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
-import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
+import com.robomwm.prettysimpleshop.shop.ShopUtil;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Display;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
@@ -47,17 +45,15 @@ import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unpa
 public class ShowoffItem implements Listener {
     private final PrettySimpleShop plugin;
     private final Economy economy;
-    private final ShopAPI shopAPI;
     private final Set<ItemDisplay> spawnedItems = new HashSet<>();
     private final ConfigManager config;
     private final boolean showItemName;
 
-    public ShowoffItem(PrettySimpleShop plugin, Economy economy, ShopAPI shopAPI, boolean showItemName) {
+    public ShowoffItem(PrettySimpleShop plugin, Economy economy, boolean showItemName) {
         this.plugin = plugin;
         this.economy = economy;
         config = plugin.getConfigManager();
         Bukkit.getPluginManager().registerEvents(this, plugin);
-        this.shopAPI = shopAPI;
         this.showItemName = showItemName;
 
         for (World world : Bukkit.getWorlds()) {
@@ -84,17 +80,13 @@ public class ShowoffItem implements Listener {
                 continue;
             }
 
-            if (!shopAPI.isShop(container, false)) {
+            ShopInfo shopInfo = ShopUtil.getShopInfo(container);
+
+            if (shopInfo == null || shopInfo.getItem() == null) {
                 continue;
             }
 
-            ItemStack item = shopAPI.getItemStack(container);
-
-            if (item == null) {
-                continue;
-            }
-
-            spawnItem(new ShopInfo(shopAPI.getLocation(container), item, plugin.getShopAPI().getPrice(container)));
+            spawnItem(shopInfo);
         }
     }
 
@@ -105,7 +97,7 @@ public class ShowoffItem implements Listener {
             return;
         }
 
-        if (!config.isShopBlock(event.getBlock().getType())) {
+        if (event.getBlock().getType() != Material.CHEST) {
             return;
         }
 
@@ -128,7 +120,7 @@ public class ShowoffItem implements Listener {
 
     @EventHandler
     private void onShopBought(ShopBoughtEvent event) {
-        ShopInfo shopInfo = shopAPI.getShopInfo(shopAPI.getContainer(event.getShopInfo().getLocation()));
+        ShopInfo shopInfo = ShopUtil.getShopInfo(ShopUtil.getContainer(event.getShopInfo().getLocation()));
         spawnItem(shopInfo);
     }
 
@@ -149,14 +141,13 @@ public class ShowoffItem implements Listener {
 
     private void spawnItem(ShopInfo shopInfo) {
         Location location = shopInfo.getLocation().add(0.5, 1.15, 0.5);
-        ItemStack itemStack = shopInfo.getItem();
         despawnItem(location);
+
+        ItemStack itemStack = shopInfo.getItem();
 
         if (itemStack == null) {
             return;
         }
-
-        itemStack.setAmount(1);
 
         var item = location.getWorld().spawn(location, ItemDisplay.class, displayItem -> {
             displayItem.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GROUND);
@@ -170,7 +161,7 @@ public class ShowoffItem implements Listener {
                 displayText.text(
                         config.getComponent(
                                 "hologramFormat",
-                                component("item", shopAPI.getItemName(itemStack)),
+                                component("item", ShopUtil.getItemName(itemStack)),
                                 unparsed("amount", Integer.toString(shopInfo.getItem().getAmount())),
                                 unparsed("price", economy.format(shopInfo.getPrice()))
                         )
@@ -191,17 +182,13 @@ public class ShowoffItem implements Listener {
         }
 
         spawnedItems.add(item);
-
     }
 
     private void despawnItem(Location location) {
         PrettySimpleShop.debug("Checking for item at " + location);
 
         for (var itemDisplay : location.getNearbyEntitiesByType(ItemDisplay.class, 0.001f)) {
-            for (var textDisplay : itemDisplay.getPassengers()) {
-                textDisplay.remove();
-            }
-
+            itemDisplay.getPassengers().forEach(Entity::remove);
             itemDisplay.remove();
 
             PrettySimpleShop.debug("removed item at " + location);

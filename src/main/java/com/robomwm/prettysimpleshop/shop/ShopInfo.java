@@ -13,32 +13,40 @@ public class ShopInfo {
     private final Location location;
     private final ItemStack item;
     private final double price;
+    private final double revenue;
 
-    public ShopInfo(Location location, ItemStack item, double price) {
+    public ShopInfo(Location location, ItemStack item, double price, double revenue) {
         this.location = location;
         this.item = item;
         this.price = price;
+        this.revenue = revenue;
     }
 
     public ShopInfo(ShopInfo shopInfo, int amount) {
         this.location = shopInfo.location.clone();
-        this.item = shopInfo.item.clone();
-        this.item.setAmount(amount);
+        this.item = shopInfo.item.asQuantity(amount);
         this.price = shopInfo.price;
+        this.revenue = shopInfo.revenue;
     }
 
     public Location getLocation() {
         return location.clone();
     }
 
+    public ItemStack getItem() {
+        if (item != null) {
+            return item.clone();
+        }
+
+        return null;
+    }
+
     public double getPrice() {
         return price;
     }
 
-    public ItemStack getItem() {
-        if (item != null)
-            return item.clone();
-        return null;
+    public double getRevenue() {
+        return revenue;
     }
 
     @Override

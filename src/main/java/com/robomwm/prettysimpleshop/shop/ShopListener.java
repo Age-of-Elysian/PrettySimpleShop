@@ -22,7 +22,6 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
@@ -38,16 +37,14 @@ import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unpa
  * @author RoboMWM
  */
 public class ShopListener implements Listener {
-    private final ShopAPI shopAPI;
     private final Economy economy;
     private final Map<UUID, ShopInfo> selectedShop = new HashMap<>();
     private final Map<UUID, Double> priceSetter = new HashMap<>();
     private final ConfigManager config;
 
 
-    public ShopListener(JavaPlugin plugin, ShopAPI shopAPI, Economy economy, ConfigManager config) {
+    public ShopListener(JavaPlugin plugin, Economy economy, ConfigManager config) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
-        this.shopAPI = shopAPI;
         this.config = config;
         this.economy = economy;
     }
@@ -128,25 +125,21 @@ public class ShopListener implements Listener {
 
         Container container = (Container) block.getState(false);
 
-        if (!shopAPI.isShop(container)) {
+        ShopInfo shopInfo = ShopUtil.getShopInfo(container);
+
+        if (shopInfo == null) {
             return false;
         }
 
-        double price = shopAPI.getPrice(container);
-
-        if (price < 0) {
+        if (shopInfo.getPrice() < 0) {
             config.sendComponent(player, "noPrice");
             return true;
         }
 
-        ItemStack item = shopAPI.getItemStack(container);
-
-        if (item == null) {
+        if (shopInfo.getItem() == null) {
             config.sendComponent(player, "noStock");
             return true;
         }
-
-        ShopInfo shopInfo = new ShopInfo(shopAPI.getLocation(container), item, price);
 
         ShopSelectEvent shopSelectEvent = new ShopSelectEvent(player, shopInfo);
 
@@ -155,9 +148,9 @@ public class ShopListener implements Listener {
         config.sendComponent(
                 player,
                 "buyPrompt",
-                component("item", item.displayName()),
-                unparsed("price", economy.format(price)),
-                unparsed("available", Integer.toString(item.getAmount()))
+                component("item", shopInfo.getItem().displayName()),
+                unparsed("price", economy.format(shopInfo.getPrice())),
+                unparsed("available", Integer.toString(shopInfo.getItem().getAmount()))
         );
 
         Bukkit.getPluginManager().callEvent(shopSelectEvent);
@@ -175,30 +168,26 @@ public class ShopListener implements Listener {
             return;
         }
 
-        if (event.getInventory().getLocation() == null) {
-            return;
-        }
-
-        Container container = shopAPI.getContainer(event.getInventory().getLocation());
-
-        if (container == null) {
+        if (!(event.getInventory().getHolder(false) instanceof Container container)) {
             return;
         }
 
         if (priceSetter.containsKey(player.getUniqueId())) {
             double newPrice = priceSetter.remove(player.getUniqueId());
-            shopAPI.setPrice(container, newPrice);
+            ShopUtil.setPrice(container, newPrice);
             config.sendComponent(player, "priceApplied", unparsed("price", economy.format(newPrice)));
             Bukkit.getPluginManager().callEvent(new ShopPricedEvent(player, container.getLocation(), newPrice));
         }
 
-        if (!shopAPI.isShop(container)) {
+        ShopInfo shopInfo = ShopUtil.getShopInfo(container);
+
+        if (shopInfo == null) {
             return;
         }
 
-        Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, shopAPI.getShopInfo(container), true));
+        Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, shopInfo, true));
 
-        double revenue = shopAPI.getRevenue(container, true);
+        double revenue = ShopUtil.getRevenue(container, true);
 
         if (revenue <= 0) {
             return;
@@ -218,13 +207,15 @@ public class ShopListener implements Listener {
 
         Container container = (Container) block.getState(false);
 
-        if (!shopAPI.isShop(container)) {
+        ShopInfo shopInfo = ShopUtil.getShopInfo(container);
+
+        if (shopInfo == null) {
             return;
         }
 
-        Bukkit.getPluginManager().callEvent(new ShopBreakEvent(event.getPlayer(), shopAPI.getShopInfo(container), event));
+        Bukkit.getPluginManager().callEvent(new ShopBreakEvent(event.getPlayer(), shopInfo, event));
 
-        double revenue = shopAPI.getRevenue(container, true);
+        double revenue = ShopUtil.getRevenue(container, true);
 
         if (revenue > 0) {
             Player player = event.getPlayer();
@@ -247,17 +238,19 @@ public class ShopListener implements Listener {
             return;
         }
 
-        if (!shopAPI.isShop(container)) {
+        ShopInfo shopInfo = ShopUtil.getShopInfo(container);
+
+        if (shopInfo == null) {
             return;
         }
 
-        Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, shopAPI.getShopInfo(container), false));
+        Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, shopInfo, false));
     }
 
     //For now we'll just prevent explosions. Might consider dropping stored revenue on explosion later.
     @EventHandler(ignoreCancelled = true)
     private void onExplode(EntityExplodeEvent event) {
-        event.blockList().removeIf(block -> config.isShopBlock(block.getType()) && shopAPI.isShop((Container) block.getState(false)));
+        event.blockList().removeIf(block -> config.isShopBlock(block.getType()) && ShopUtil.isShop((Container) block.getState(false)));
     }
 
     //Commands cuz well all the data's here so yea

@@ -21,20 +21,17 @@ import java.util.Set;
  * @author RoboMWM
  */
 public class ConfigManager {
-    private final JavaPlugin instance;
     private final FileConfiguration config;
     private final boolean debug;
-    private ConfigurationSection showOffItemsFeatureSection;
     private ConfigurationSection messageSection;
     private final Set<World> whitelistedWorlds = new HashSet<>();
     private final Set<Material> shopBlocks = new HashSet<>();
 
 
     public ConfigManager(JavaPlugin plugin) {
-        instance = plugin;
-        config = instance.getConfig();
+        config = plugin.getConfig();
 
-        showOffItemsFeatureSection = config.getConfigurationSection("showOffItemsFeature");
+        ConfigurationSection showOffItemsFeatureSection = config.getConfigurationSection("showOffItemsFeature");
         if (showOffItemsFeatureSection == null) {
             showOffItemsFeatureSection = config.createSection("showOffItemsFeature");
         }
@@ -57,9 +54,6 @@ public class ConfigManager {
         messageSection = config.getConfigurationSection("messages");
         if (messageSection == null)
             messageSection = config.createSection("messages");
-        messageSection.addDefault("shopName", "shop");
-        messageSection.addDefault("price", "Price:");
-        messageSection.addDefault("sales", "Sales:");
         messageSection.addDefault("noPrice", "<red>This shop is not open for sale yet! <yellow>If you are the owner, use /setprice <price> to open this shop!");
         messageSection.addDefault("noStock", "<red>This shop is out of stock!");
         messageSection.addDefault("noMoney", "<red>Transaction canceled: Insufficient /money. Try again with a smaller quantity?");
@@ -85,7 +79,7 @@ public class ConfigManager {
         messageSection.addDefault("hologramFormat", "<item><newline><amount>x @ <price>");
 
         config.options().copyDefaults(true);
-        instance.saveConfig();
+        plugin.saveConfig();
         debug = config.getBoolean("debug", false);
 
         if (config.getBoolean("useWorldWhitelist")) {
@@ -93,7 +87,7 @@ public class ConfigManager {
                 World world = Bukkit.getWorld(worldName);
 
                 if (world == null) {
-                    instance.getLogger().warning("World " + worldName + " does not exist.");
+                    plugin.getLogger().warning("World " + worldName + " does not exist.");
                 } else {
                     whitelistedWorlds.add(world);
                 }
@@ -103,27 +97,20 @@ public class ConfigManager {
         for (String blockName : config.getStringList("shopBlocks")) {
             Material material = Material.matchMaterial(blockName);
             if (material == null)
-                instance.getLogger().warning(blockName + " is not a valid Material name.");
+                plugin.getLogger().warning(blockName + " is not a valid Material name.");
             else
                 shopBlocks.add(material);
         }
 
-        config.options().header("showOffItems spawns a display item above each shop.\n" +
-                "showBuyPrompt prompts the buyer to input the quantity they wish to buy in chat, instead of requiring them to use the /buy command.\n" +
-                "shopBlocks contains blocks you allow to be used as shops. Only blocks that are a Nameable Container can be used as a shop.\n" +
-                "Valid Material names can be found here https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html\n" +
-                "Block types that are Containers are listed as subinterfaces here (some are not Nameable, you can check by clicking the subinterface of interest) https://hub.spigotmc.org/javadocs/spigot/org/bukkit/block/Container.html");
+        config.options().header("""
+                showOffItems spawns a display item above each shop.
+                showBuyPrompt prompts the buyer to input the quantity they wish to buy in chat, instead of requiring them to use the /buy command.
+                shopBlocks contains blocks you allow to be used as shops. Only blocks that are a Nameable Container can be used as a shop.
+                Valid Material names can be found here https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+                Block types that are Containers are listed as subinterfaces here (some are not Nameable, you can check by clicking the subinterface of interest) https://hub.spigotmc.org/javadocs/spigot/org/bukkit/block/Container.html
+                """);
 
-        //Spigot-4441
-        //Basically, getting a block's/item's custom name will not return the reset color code.
-        if (getString("shopName").contains(ChatColor.RESET.toString()))
-            messageSection.set("shopName", messageSection.getString("shopName").replaceAll("(?i)&r", "&0"));
-        if (getString("price").contains(ChatColor.RESET.toString()))
-            messageSection.set("price", messageSection.getString("price").replaceAll("(?i)&r", "&0"));
-        if (getString("sales").contains(ChatColor.RESET.toString()))
-            messageSection.set("sales", messageSection.getString("sales").replaceAll("(?i)&r", "&0"));
-
-        instance.saveConfig();
+        plugin.saveConfig();
     }
 
     public boolean getBoolean(String key) {

@@ -5,7 +5,6 @@ import com.robomwm.prettysimpleshop.command.HelpCommand;
 import com.robomwm.prettysimpleshop.command.PriceCommand;
 import com.robomwm.prettysimpleshop.feature.BuyConversation;
 import com.robomwm.prettysimpleshop.feature.ShowoffItem;
-import com.robomwm.prettysimpleshop.shop.ShopAPI;
 import com.robomwm.prettysimpleshop.shop.ShopListener;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -20,14 +19,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class PrettySimpleShop extends JavaPlugin {
     private Economy economy;
     private static boolean debug;
-    private ShopAPI shopAPI;
     private ConfigManager config;
     private ShowoffItem showoffItem = null;
 
     public void onEnable() {
         config = new ConfigManager(this);
         debug = config.isDebug();
-        shopAPI = new ShopAPI(config.getString("shopName"), config.getString("price"), config.getString("sales"));
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
             economy = getEconomy();
@@ -36,13 +33,13 @@ public class PrettySimpleShop extends JavaPlugin {
                 Bukkit.getPluginManager().disablePlugin(this);
                 return;
             }
-            ShopListener shopListener = new ShopListener(this, shopAPI, economy, config);
+            ShopListener shopListener = new ShopListener(this, economy, config);
             if (config.getBoolean("showOffItemsFeature.enabled")) {
-                showoffItem = new ShowoffItem(this, economy, shopAPI, config.getBoolean("showOffItemsFeature.showItemsName"));
+                showoffItem = new ShowoffItem(this, economy, config.getBoolean("showOffItemsFeature.showItemsName"));
             }
             getCommand("shop").setExecutor(new HelpCommand(this));
             getCommand("setprice").setExecutor(new PriceCommand(shopListener));
-            getCommand("buy").setExecutor(new BuyCommand(this, shopListener, economy));
+            getCommand("buy").setExecutor(new BuyCommand(this, shopListener));
             new BuyConversation(this);
         });
     }
@@ -51,10 +48,6 @@ public class PrettySimpleShop extends JavaPlugin {
         if (showoffItem != null) {
             showoffItem.despawnAll();
         }
-    }
-
-    public ShopAPI getShopAPI() {
-        return shopAPI;
     }
 
     public ConfigManager getConfigManager() {
@@ -67,7 +60,7 @@ public class PrettySimpleShop extends JavaPlugin {
         }
     }
 
-    private Economy getEconomy() {
+    public Economy getEconomy() {
         if (economy != null) {
             return economy;
         }
