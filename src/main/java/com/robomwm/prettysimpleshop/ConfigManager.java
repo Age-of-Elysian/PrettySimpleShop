@@ -5,15 +5,15 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Tag;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created on 2/16/2017.
@@ -31,12 +31,7 @@ public class ConfigManager {
     public ConfigManager(JavaPlugin plugin) {
         config = plugin.getConfig();
 
-        ConfigurationSection showOffItemsFeatureSection = config.getConfigurationSection("showOffItemsFeature");
-        if (showOffItemsFeatureSection == null) {
-            showOffItemsFeatureSection = config.createSection("showOffItemsFeature");
-        }
-        showOffItemsFeatureSection.addDefault("enabled", true);
-        showOffItemsFeatureSection.addDefault("showItemsName", true);
+        config.addDefault("showOffItemsFeature", Map.of("enabled", true, "showItemsName", true));
 
         config.addDefault("useWorldWhitelist", false);
 
@@ -135,21 +130,11 @@ public class ConfigManager {
         return Component.text("Missing message: " + key, NamedTextColor.RED);
     }
 
-    public String getString(String key) {
-        return formatter(messageSection.getString(key));
-    }
-
     public boolean isWhitelistedWorld(World world) {
         return whitelistedWorlds.isEmpty() || whitelistedWorlds.contains(world);
     }
 
     public boolean isShopBlock(Material material) {
         return shopBlocks.contains(material);
-    }
-
-    /*Utility methods*/
-
-    private String formatter(String stringToFormat) {
-        return ChatColor.translateAlternateColorCodes('&', stringToFormat);
     }
 }

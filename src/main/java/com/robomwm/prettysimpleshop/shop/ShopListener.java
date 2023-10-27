@@ -1,10 +1,7 @@
 package com.robomwm.prettysimpleshop.shop;
 
 import com.robomwm.prettysimpleshop.ConfigManager;
-import com.robomwm.prettysimpleshop.event.ShopBreakEvent;
-import com.robomwm.prettysimpleshop.event.ShopOpenCloseEvent;
-import com.robomwm.prettysimpleshop.event.ShopPricedEvent;
-import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
+import com.robomwm.prettysimpleshop.event.*;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -185,7 +182,7 @@ public class ShopListener implements Listener {
             return;
         }
 
-        Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, shopInfo, true));
+        Bukkit.getPluginManager().callEvent(new ShopOpenEvent(player, shopInfo));
 
         double revenue = ShopUtil.getRevenue(container, true);
 
@@ -244,7 +241,7 @@ public class ShopListener implements Listener {
             return;
         }
 
-        Bukkit.getPluginManager().callEvent(new ShopOpenCloseEvent(player, shopInfo, false));
+        Bukkit.getPluginManager().callEvent(new ShopCloseEvent(player, shopInfo));
     }
 
     //For now we'll just prevent explosions. Might consider dropping stored revenue on explosion later.

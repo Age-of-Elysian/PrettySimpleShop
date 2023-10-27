@@ -5,15 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-/**
- * Created on 2/11/2018.
- * <p>
- * Convenience event to determine when a player is opening or closing a shop.
- *
- * @author RoboMWM
- */
-public class ShopOpenCloseEvent extends Event {
-    // Custom Event Requirements
+public class ShopOpenEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
 
     public static HandlerList getHandlerList() {
@@ -27,12 +19,10 @@ public class ShopOpenCloseEvent extends Event {
 
     private final Player player;
     private final ShopInfo shopInfo;
-    private final boolean open;
 
-    public ShopOpenCloseEvent(Player player, ShopInfo shopInfo, boolean open) {
+    public ShopOpenEvent(Player player, ShopInfo shopInfo) {
         this.player = player;
         this.shopInfo = shopInfo;
-        this.open = open;
     }
 
     public Player getPlayer() {
@@ -41,9 +31,5 @@ public class ShopOpenCloseEvent extends Event {
 
     public ShopInfo getShopInfo() {
         return shopInfo;
-    }
-
-    public boolean isOpen() {
-        return open;
     }
 }

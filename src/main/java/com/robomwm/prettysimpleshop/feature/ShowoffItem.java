@@ -5,7 +5,7 @@ import com.robomwm.prettysimpleshop.ConfigManager;
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
 import com.robomwm.prettysimpleshop.event.ShopBoughtEvent;
 import com.robomwm.prettysimpleshop.event.ShopBreakEvent;
-import com.robomwm.prettysimpleshop.event.ShopOpenCloseEvent;
+import com.robomwm.prettysimpleshop.event.ShopCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
 import com.robomwm.prettysimpleshop.shop.ShopUtil;
@@ -130,7 +130,7 @@ public class ShowoffItem implements Listener {
     }
 
     @EventHandler
-    private void onShopOpen(ShopOpenCloseEvent event) {
+    private void onShopClose(ShopCloseEvent event) {
         spawnItem(event.getShopInfo());
     }
 
