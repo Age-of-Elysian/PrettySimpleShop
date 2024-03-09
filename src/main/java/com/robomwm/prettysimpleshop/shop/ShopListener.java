@@ -231,7 +231,7 @@ public class ShopListener implements Listener {
             return;
         }
 
-        if (!(event.getInventory().getHolder() instanceof Container container)) {
+        if (!(event.getInventory().getHolder(false) instanceof Container container)) {
             return;
         }
 
