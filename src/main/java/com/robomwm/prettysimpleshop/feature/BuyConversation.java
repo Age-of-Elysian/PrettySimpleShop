@@ -71,7 +71,7 @@ public class BuyConversation implements Listener {
 
             event.setCancelled(true);
 
-            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> player.performCommand("prettysimpleshop:buy " + amount));
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> player.performCommand("prettysimpleshop:psbuy " + amount));
         } catch (Throwable ignored) {
         }
     }

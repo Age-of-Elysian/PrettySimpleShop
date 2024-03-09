@@ -69,7 +69,7 @@ public class ConfigManager {
                 To create a shop, put items of the same type in a chest, and use /setprice to set the price per item.
                 Buying:
                 Punch a shop to view the item. Hover over it in chat for item details.
-                Click the message, /buy, or double-punch a shop to buy from a shop
+                Click the message, /psbuy, or double-punch a shop to buy from a shop
                 """);
         messageSection.addDefault("hologramFormat", "<item><newline><amount>x @ <price>");
 
@@ -99,7 +99,7 @@ public class ConfigManager {
 
         config.options().header("""
                 showOffItems spawns a display item above each shop.
-                showBuyPrompt prompts the buyer to input the quantity they wish to buy in chat, instead of requiring them to use the /buy command.
+                showBuyPrompt prompts the buyer to input the quantity they wish to buy in chat, instead of requiring them to use the /psbuy command.
                 shopBlocks contains blocks you allow to be used as shops. Only blocks that are a Nameable Container can be used as a shop.
                 Valid Material names can be found here https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
                 Block types that are Containers are listed as subinterfaces here (some are not Nameable, you can check by clicking the subinterface of interest) https://hub.spigotmc.org/javadocs/spigot/org/bukkit/block/Container.html
