@@ -37,9 +37,9 @@ public class PrettySimpleShop extends JavaPlugin {
             if (config.getBoolean("showOffItemsFeature.enabled")) {
                 showoffItem = new ShowoffItem(this, economy, config.getBoolean("showOffItemsFeature.showItemsName"));
             }
-            getCommand("shop").setExecutor(new HelpCommand(this));
+            getCommand("psshop").setExecutor(new HelpCommand(this));
+            getCommand("psbuy").setExecutor(new BuyCommand(this, shopListener));
             getCommand("setprice").setExecutor(new PriceCommand(shopListener));
-            getCommand("buy").setExecutor(new BuyCommand(this, shopListener));
             new BuyConversation(this);
         });
     }
