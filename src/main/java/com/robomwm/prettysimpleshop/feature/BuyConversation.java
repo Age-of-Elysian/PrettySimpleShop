@@ -2,13 +2,12 @@ package com.robomwm.prettysimpleshop.feature;
 
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
-import io.papermc.paper.event.player.AsyncChatEvent;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -20,9 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created on 3/13/2018.
- * <p>
- * I was gonna do something like an assistant or cashier or something
- * but that's all too ambiguous so here's a generic name
  *
  * @author RoboMWM
  */
@@ -55,8 +51,11 @@ public class BuyConversation implements Listener {
         buyPrompt.remove(event.getPlayer().getUniqueId());
     }
 
+    // Must use the deprecated event because
+    // of other legacy plugins
+    @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.LOWEST)
-    private void onChat(AsyncChatEvent event) {
+    private void onChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
 
         if (!buyPrompt.remove(player.getUniqueId())) {
@@ -64,8 +63,7 @@ public class BuyConversation implements Listener {
         }
 
         try {
-            String message = PlainTextComponentSerializer.plainText().serialize(event.originalMessage());
-            int amount = Integer.parseInt(message);
+            int amount = Integer.parseInt(event.getMessage());
 
             if (amount <= 0) {
                 return;
