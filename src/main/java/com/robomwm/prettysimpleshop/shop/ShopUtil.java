@@ -3,7 +3,6 @@ package com.robomwm.prettysimpleshop.shop;
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
@@ -40,7 +39,7 @@ public class ShopUtil {
         Inventory inventory = container.getInventory();
         ItemStack item = null;
         for (ItemStack itemStack : inventory) {
-            if (itemStack == null || itemStack.getType() == Material.AIR) {
+            if (itemStack == null || itemStack.getType().isEmpty()) {
                 continue;
             }
 

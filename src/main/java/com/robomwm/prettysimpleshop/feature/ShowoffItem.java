@@ -11,10 +11,7 @@ import com.robomwm.prettysimpleshop.shop.ShopInfo;
 import com.robomwm.prettysimpleshop.shop.ShopUtil;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.*;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
-import org.bukkit.block.Container;
-import org.bukkit.block.DoubleChest;
+import org.bukkit.block.*;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
@@ -93,16 +90,22 @@ public class ShowoffItem implements Listener {
     // despawn items when a shop chest becomes a double chest
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     private void onDoubleChest(BlockPlaceEvent event) {
-        if (!config.isWhitelistedWorld(event.getBlock().getWorld())) {
+        Block block = event.getBlock();
+
+        if (block.getType() != Material.CHEST && block.getType() != Material.TRAPPED_CHEST) {
             return;
         }
 
-        if (event.getBlock().getType() != Material.CHEST) {
+        if (!config.isWhitelistedWorld(block.getWorld())) {
             return;
         }
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            InventoryHolder holder = ((Container) event.getBlock().getState(false)).getInventory().getHolder();
+            if (!(block.getState(false) instanceof Container container)) {
+                return;
+            }
+
+            InventoryHolder holder = container.getInventory().getHolder(false);
 
             if (holder instanceof DoubleChest doubleChest) {
                 despawnItem(((Chest) (doubleChest.getLeftSide(false))).getLocation().add(0.5, 1.15, 0.5));

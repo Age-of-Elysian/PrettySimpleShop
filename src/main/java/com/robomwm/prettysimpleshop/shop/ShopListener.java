@@ -170,10 +170,10 @@ public class ShopListener implements Listener {
         }
 
         if (priceSetter.containsKey(player.getUniqueId())) {
-            double newPrice = priceSetter.remove(player.getUniqueId());
-            ShopUtil.setPrice(container, newPrice);
-            config.sendComponent(player, "priceApplied", unparsed("price", economy.format(newPrice)));
-            Bukkit.getPluginManager().callEvent(new ShopPricedEvent(player, container.getLocation(), newPrice));
+            double price = priceSetter.remove(player.getUniqueId());
+            ShopUtil.setPrice(container, price);
+            config.sendComponent(player, "priceApplied", unparsed("price", economy.format(price)));
+            Bukkit.getPluginManager().callEvent(new ShopPricedEvent(player, ShopUtil.getLocation(container), price));
         }
 
         ShopInfo shopInfo = ShopUtil.getShopInfo(container);
