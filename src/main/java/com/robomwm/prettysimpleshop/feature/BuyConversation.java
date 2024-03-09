@@ -5,6 +5,7 @@ import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -56,7 +57,9 @@ public class BuyConversation implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     private void onChat(AsyncChatEvent event) {
-        if (!buyPrompt.remove(event.getPlayer().getUniqueId())) {
+        Player player = event.getPlayer();
+
+        if (!buyPrompt.remove(player.getUniqueId())) {
             return;
         }
 
@@ -70,8 +73,7 @@ public class BuyConversation implements Listener {
 
             event.setCancelled(true);
 
-            // TODO: run directly
-            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> event.getPlayer().performCommand("buy " + amount));
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> player.performCommand("prettysimpleshop:buy " + amount));
         } catch (Throwable ignored) {
         }
     }
