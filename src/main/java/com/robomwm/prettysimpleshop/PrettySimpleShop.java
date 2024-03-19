@@ -4,6 +4,7 @@ import com.robomwm.prettysimpleshop.command.BuyCommand;
 import com.robomwm.prettysimpleshop.command.HelpCommand;
 import com.robomwm.prettysimpleshop.command.PriceCommand;
 import com.robomwm.prettysimpleshop.feature.BuyConversation;
+import com.robomwm.prettysimpleshop.feature.LegacyConversion;
 import com.robomwm.prettysimpleshop.feature.ShowoffItem;
 import com.robomwm.prettysimpleshop.shop.ShopListener;
 import net.milkbowl.vault.economy.Economy;
@@ -37,6 +38,7 @@ public class PrettySimpleShop extends JavaPlugin {
             if (config.getBoolean("showOffItemsFeature.enabled")) {
                 showoffItem = new ShowoffItem(this, economy, config.getBoolean("showOffItemsFeature.showItemsName"));
             }
+            new LegacyConversion(this);
             getCommand("psshop").setExecutor(new HelpCommand(this));
             getCommand("psbuy").setExecutor(new BuyCommand(this, shopListener));
             getCommand("setprice").setExecutor(new PriceCommand(shopListener));

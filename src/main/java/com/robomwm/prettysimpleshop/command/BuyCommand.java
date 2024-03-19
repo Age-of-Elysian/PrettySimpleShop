@@ -2,8 +2,8 @@ package com.robomwm.prettysimpleshop.command;
 
 import com.robomwm.prettysimpleshop.ConfigManager;
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
-import com.robomwm.prettysimpleshop.event.ShopBoughtEvent;
-import com.robomwm.prettysimpleshop.shop.ShopInfo;
+import com.robomwm.prettysimpleshop.event.ShopTransactionEvent;
+import com.robomwm.prettysimpleshop.shop.OutputShopInfo;
 import com.robomwm.prettysimpleshop.shop.ShopListener;
 import com.robomwm.prettysimpleshop.shop.ShopUtil;
 import org.bukkit.Bukkit;
@@ -91,9 +91,7 @@ public class BuyCommand implements CommandExecutor, Listener {
     }
 
     public void buyCommand(Player player, int amount) {
-        ShopInfo shopInfo = shopListener.getSelectedShop(player);
-
-        if (shopInfo == null) {
+        if (!(shopListener.getSelectedShop(player) instanceof OutputShopInfo shopInfo)) {
             config.sendComponent(player, "noShopSelected");
             return;
         }
@@ -114,9 +112,7 @@ public class BuyCommand implements CommandExecutor, Listener {
             return;
         }
 
-        ItemStack input = shopInfo.getItem().asQuantity(amount);
-
-        ItemStack output = ShopUtil.performTransaction(ShopUtil.getContainer(shopInfo.getLocation()), input, shopInfo.getPrice());
+        ItemStack output = ShopUtil.performTransaction(shopInfo, amount);
 
         if (output == null) {
             config.sendComponent(player, "shopModified");
@@ -125,7 +121,7 @@ public class BuyCommand implements CommandExecutor, Listener {
 
         plugin.getEconomy().withdrawPlayer(player, output.getAmount() * shopInfo.getPrice());
 
-        Bukkit.getPluginManager().callEvent(new ShopBoughtEvent(player, shopInfo, output.getAmount()));
+        Bukkit.getPluginManager().callEvent(new ShopTransactionEvent(player, shopInfo, output.getAmount()));
 
         config.sendComponent(
                 player,

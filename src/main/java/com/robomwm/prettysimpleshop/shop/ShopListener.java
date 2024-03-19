@@ -1,7 +1,10 @@
 package com.robomwm.prettysimpleshop.shop;
 
 import com.robomwm.prettysimpleshop.ConfigManager;
-import com.robomwm.prettysimpleshop.event.*;
+import com.robomwm.prettysimpleshop.event.ShopBreakEvent;
+import com.robomwm.prettysimpleshop.event.ShopCloseEvent;
+import com.robomwm.prettysimpleshop.event.ShopOpenEvent;
+import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -19,6 +22,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
@@ -169,11 +173,12 @@ public class ShopListener implements Listener {
             return;
         }
 
+        PersistentDataContainer data = ShopUtil.getPriorityData(container);
+
         if (priceSetter.containsKey(player.getUniqueId())) {
             double price = priceSetter.remove(player.getUniqueId());
-            ShopUtil.setPrice(container, price);
+            ShopUtil.setPrice(data, price);
             config.sendComponent(player, "priceApplied", unparsed("price", economy.format(price)));
-            Bukkit.getPluginManager().callEvent(new ShopPricedEvent(player, ShopUtil.getLocation(container), price));
         }
 
         ShopInfo shopInfo = ShopUtil.getShopInfo(container);
@@ -184,7 +189,8 @@ public class ShopListener implements Listener {
 
         Bukkit.getPluginManager().callEvent(new ShopOpenEvent(player, shopInfo));
 
-        double revenue = ShopUtil.getRevenue(container, true);
+        double revenue = ShopUtil.getRevenue(data);
+        ShopUtil.setRevenue(data, 0);
 
         if (revenue <= 0) {
             return;
@@ -210,9 +216,12 @@ public class ShopListener implements Listener {
             return;
         }
 
+        // FIXME: double chests?
         Bukkit.getPluginManager().callEvent(new ShopBreakEvent(event.getPlayer(), shopInfo, event));
 
-        double revenue = ShopUtil.getRevenue(container, true);
+        PersistentDataContainer data = container.getPersistentDataContainer();
+        double revenue = ShopUtil.getRevenue(data);
+        ShopUtil.setRevenue(data, 0);
 
         if (revenue > 0) {
             Player player = event.getPlayer();
@@ -220,11 +229,10 @@ public class ShopListener implements Listener {
             config.sendComponent(player, "collectRevenue", unparsed("revenue", economy.format(revenue)));
         }
 
-        // reset name so the drop is unnamed
-        container.customName(null);
+        // TODO: check deposit
     }
 
-    //Purely for calling the dumb event
+    // Purely for calling the dumb event
     @EventHandler(ignoreCancelled = true)
     private void onClose(InventoryCloseEvent event) {
         if (!(event.getPlayer() instanceof Player player)) {
@@ -247,7 +255,7 @@ public class ShopListener implements Listener {
     //For now we'll just prevent explosions. Might consider dropping stored revenue on explosion later.
     @EventHandler(ignoreCancelled = true)
     private void onExplode(EntityExplodeEvent event) {
-        event.blockList().removeIf(block -> config.isShopBlock(block.getType()) && ShopUtil.isShop((Container) block.getState(false)));
+        event.blockList().removeIf(block -> config.isShopBlock(block.getType()) && ShopUtil.isShop(((Container) block.getState(false)).getPersistentDataContainer()));
     }
 
     //Commands cuz well all the data's here so yea

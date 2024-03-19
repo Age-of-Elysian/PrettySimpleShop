@@ -3,10 +3,10 @@ package com.robomwm.prettysimpleshop.feature;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.robomwm.prettysimpleshop.ConfigManager;
 import com.robomwm.prettysimpleshop.PrettySimpleShop;
-import com.robomwm.prettysimpleshop.event.ShopBoughtEvent;
 import com.robomwm.prettysimpleshop.event.ShopBreakEvent;
 import com.robomwm.prettysimpleshop.event.ShopCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
+import com.robomwm.prettysimpleshop.event.ShopTransactionEvent;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
 import com.robomwm.prettysimpleshop.shop.ShopUtil;
 import net.milkbowl.vault.economy.Economy;
@@ -122,7 +122,7 @@ public class ShowoffItem implements Listener {
     }
 
     @EventHandler
-    private void onShopBought(ShopBoughtEvent event) {
+    private void onShopBought(ShopTransactionEvent event) {
         ShopInfo shopInfo = ShopUtil.getShopInfo(ShopUtil.getContainer(event.getShopInfo().getLocation()));
         spawnItem(shopInfo);
     }

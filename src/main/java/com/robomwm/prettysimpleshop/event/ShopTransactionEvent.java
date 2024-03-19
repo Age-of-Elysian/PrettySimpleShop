@@ -11,7 +11,7 @@ import org.bukkit.event.HandlerList;
  *
  * @author RoboMWM
  */
-public class ShopBoughtEvent extends Event implements Cancellable {
+public class ShopTransactionEvent extends Event implements Cancellable {
     // Custom Event Requirements
     private static final HandlerList handlers = new HandlerList();
 
@@ -29,7 +29,7 @@ public class ShopBoughtEvent extends Event implements Cancellable {
     private final ShopInfo shopInfo;
     private final int amount;
 
-    public ShopBoughtEvent(Player player, ShopInfo shopInfo, int amount) {
+    public ShopTransactionEvent(Player player, ShopInfo shopInfo, int amount) {
         this.player = player;
         this.shopInfo = shopInfo;
         this.amount = amount;
