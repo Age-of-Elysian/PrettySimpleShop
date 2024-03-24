@@ -6,6 +6,7 @@ import com.robomwm.prettysimpleshop.event.ShopCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopOpenEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
@@ -43,6 +44,7 @@ public class ShopListener implements Listener {
     private final Economy economy;
     private final Map<UUID, ShopInfo> selectedShop = new HashMap<>();
     private final Map<UUID, Double> priceSetter = new HashMap<>();
+    private final Map<UUID, Double> depositSetter = new HashMap<>();
     private final ConfigManager config;
 
 
@@ -57,6 +59,7 @@ public class ShopListener implements Listener {
     private void onQuit(PlayerQuitEvent event) {
         selectedShop.remove(event.getPlayer().getUniqueId());
         priceSetter.remove(event.getPlayer().getUniqueId());
+        depositSetter.remove(event.getPlayer().getUniqueId());
     }
 
     // Cleanup
@@ -64,6 +67,7 @@ public class ShopListener implements Listener {
     private void onWorldChange(PlayerChangedWorldEvent event) {
         selectedShop.remove(event.getPlayer().getUniqueId());
         priceSetter.remove(event.getPlayer().getUniqueId());
+        depositSetter.remove(event.getPlayer().getUniqueId());
     }
 
     //We don't watch BlockDamageEvent as player may be in adventure (but uh this event probably doesn't fire in adventure either so... uhm yea... hmmm.
@@ -150,13 +154,23 @@ public class ShopListener implements Listener {
 
         selectedShop.put(player.getUniqueId(), shopInfo);
 
-        config.sendComponent(
-                player,
-                "buyPrompt",
-                component("item", shopInfo.getItem().displayName()),
-                unparsed("price", economy.format(shopInfo.getPrice())),
-                unparsed("available", Integer.toString(shopInfo.getItem().getAmount()))
-        );
+        if (shopInfo instanceof OutputShopInfo) {
+            config.sendComponent(
+                    player,
+                    "buyPrompt",
+                    component("item", shopInfo.getItem().displayName()),
+                    unparsed("price", economy.format(shopInfo.getPrice())),
+                    unparsed("available", Integer.toString(shopInfo.getItem().getAmount()))
+            );
+        } else if (shopInfo instanceof InputShopInfo) {
+            config.sendComponent(
+                    player,
+                    "sellPrompt",
+                    component("item", shopInfo.getItem().displayName()),
+                    unparsed("price", economy.format(shopInfo.getPrice())),
+                    unparsed("available", Integer.toString(shopInfo.getItem().getAmount()))
+            );
+        }
 
         Bukkit.getPluginManager().callEvent(shopSelectEvent);
         return true;
@@ -191,6 +205,18 @@ public class ShopListener implements Listener {
             double price = priceSetter.remove(player.getUniqueId());
             ShopUtil.setPrice(data, price);
             config.sendComponent(player, "priceApplied", unparsed("price", economy.format(price)));
+        }
+
+        if (depositSetter.containsKey(player.getUniqueId())) {
+            double deposit = depositSetter.remove(player.getUniqueId());
+
+            if (economy.withdrawPlayer(player, deposit).type == EconomyResponse.ResponseType.SUCCESS) {
+                double sum = ShopUtil.getDeposit(data) + deposit;
+                ShopUtil.setDeposit(data, sum);
+                config.sendComponent(player, "depositApplied", unparsed("deposit", economy.format(sum)));
+            } else {
+                config.sendComponent(player, "noMoney");
+            }
         }
 
         ShopInfo shopInfo = ShopUtil.getShopInfo(container);
@@ -304,5 +330,19 @@ public class ShopListener implements Listener {
         selectedShop.remove(player.getUniqueId());
         priceSetter.put(player.getUniqueId(), price);
         config.sendComponent(player, "applyPrice");
+    }
+
+    public void depositCommand(Player player, Double deposit) {
+        if (deposit == null || deposit <= 0) {
+            if (depositSetter.remove(player.getUniqueId()) != null) {
+                config.sendComponent(player, "setDepositCanceled");
+            }
+
+            return;
+        }
+
+        selectedShop.remove(player.getUniqueId());
+        depositSetter.put(player.getUniqueId(), deposit);
+        config.sendComponent(player, "applyDeposit");
     }
 }

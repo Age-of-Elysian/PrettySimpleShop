@@ -4,6 +4,7 @@ website: http://robomwm.com
 authors: [Vrganj, RoboMWM]
 main: com.robomwm.prettysimpleshop.PrettySimpleShop
 api-version: '1.19'
+depend: [Vault]
 softdepend:
 - Multiverse-Core
 - Essentials
@@ -13,9 +14,14 @@ loadbefore:
 commands:
   setprice:
     usage: /setprice <price> - Sets the price per item of a shop. Set to 0 to give away items for free, or set to -1 to disable the shop.
+  setdeposit:
+    usage: /setdeposit <deposit> - Adds a deposit to a shop to be used to buy items.
   psbuy:
     usage: /psbuy <quantity> - Attempts to buy <quantity> amount from the selected shop (select a shop via left-clicking its chest).
     aliases: [shopbuy, buyshop, simpleshopbuy, prettysimpleshopbuy, sbuy, pbuy, pssbuy]
+  pssell:
+    usage: /pssell <quantity> - Attempts to sell <quantity> amount to the selected shop
+    aliases: [shopsell, sellshop, simpleshopsell, prettysimpleshopsell, ssell, psell, psssell]
   psshop:
     usage: Create a shop with /setprice. See /psbuy to buy from a shop.
     aliases: [simpleshop, prettysimpleshop, pshop, sshop]

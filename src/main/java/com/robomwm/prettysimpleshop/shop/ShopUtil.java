@@ -176,10 +176,48 @@ public class ShopUtil {
         PersistentDataContainer data = getPriorityData(container);
 
         double revenue = current.getRevenue() + result.getAmount() * current.getPrice();
-        setRevenue(data, getRevenue(data) + revenue);
+        setRevenue(data, revenue);
 
         Inventory inventory = container.getInventory();
         inventory.removeItem(result);
+
+        return result;
+    }
+
+    public static int performTransaction(InputShopInfo original, int amount) {
+        if (!(original.getBlock().getState(false) instanceof Container container)) {
+            return -1;
+        }
+
+        if (!(getShopInfo(container) instanceof InputShopInfo current)) {
+            return -1;
+        }
+
+        // Check for price changes
+        if (original.getPrice() != current.getPrice()) {
+            return -1;
+        }
+
+        // Check for item changes
+        if (!original.getItem().isSimilar(current.getItem())) {
+            return -1;
+        }
+
+        PersistentDataContainer data = getPriorityData(container);
+        int priced = Math.min(amount, (int) (current.getDeposit() / (amount * current.getPrice())));
+
+        ItemStack overflow = container.getInventory().addItem(current.getItem().asQuantity(priced)).get(0);
+
+        int result;
+
+        if (overflow == null) {
+            result = priced;
+        } else {
+            result = priced - overflow.getAmount();
+        }
+
+        double deposit = current.getDeposit() - result * current.getPrice();
+        setDeposit(data, deposit);
 
         return result;
     }

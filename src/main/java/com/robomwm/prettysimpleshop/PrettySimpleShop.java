@@ -1,8 +1,6 @@
 package com.robomwm.prettysimpleshop;
 
-import com.robomwm.prettysimpleshop.command.BuyCommand;
-import com.robomwm.prettysimpleshop.command.HelpCommand;
-import com.robomwm.prettysimpleshop.command.PriceCommand;
+import com.robomwm.prettysimpleshop.command.*;
 import com.robomwm.prettysimpleshop.feature.BuyConversation;
 import com.robomwm.prettysimpleshop.feature.LegacyConversion;
 import com.robomwm.prettysimpleshop.feature.ShowoffItem;
@@ -41,7 +39,9 @@ public class PrettySimpleShop extends JavaPlugin {
             new LegacyConversion(this);
             getCommand("psshop").setExecutor(new HelpCommand(this));
             getCommand("psbuy").setExecutor(new BuyCommand(this, shopListener));
+            getCommand("pssell").setExecutor(new SellCommand(this, shopListener));
             getCommand("setprice").setExecutor(new PriceCommand(shopListener));
+            getCommand("setdeposit").setExecutor(new DepositCommand(shopListener));
             new BuyConversation(this);
         });
     }
@@ -65,10 +65,6 @@ public class PrettySimpleShop extends JavaPlugin {
     public Economy getEconomy() {
         if (economy != null) {
             return economy;
-        }
-
-        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
-            return null;
         }
 
         RegisteredServiceProvider<Economy> rsp = Bukkit.getServicesManager().getRegistration(Economy.class);

@@ -51,20 +51,25 @@ public class ConfigManager {
             messageSection = config.createSection("messages");
         messageSection.addDefault("noPrice", "<red>This shop is not open for sale yet! <yellow>If you are the owner, use /setprice <price> to open this shop!");
         messageSection.addDefault("noStock", "<red>This shop is out of stock!");
-        messageSection.addDefault("noMoney", "<red>Transaction canceled: Insufficient /money. Try again with a smaller quantity?");
+        messageSection.addDefault("noStockPlayer", "<red>You are out of stock!");
+        messageSection.addDefault("noMoney", "<red>Transaction canceled: Insufficient money. Try again with a smaller quantity?");
         messageSection.addDefault("noShopSelected", "<red>Select a shop via left-clicking its chest.");
         messageSection.addDefault("shopModified", "<red>Transaction canceled: Shop was modified. Please try again.");
+        messageSection.addDefault("shopFull", "<red>Transaction canceled: Shop is completely full. Try again later.");
         messageSection.addDefault("transactionCanceled", "<red>Transaction canceled.");
-        messageSection.addDefault("transactionCompletedWindow", "Bought <amount>x <item> for <price>");
-        messageSection.addDefault("transactionCompleted", "<green>Bought <yellow><amount>x</yellow> <item> for <yellow><price>");
+        messageSection.addDefault("buyCompleted", "<green>Bought <yellow><amount>x</yellow> <item> for <yellow><price>");
+        messageSection.addDefault("sellCompleted", "<green>Sold <yellow><amount>x</yellow> <item> for <yellow><price>");
         messageSection.addDefault("applyPrice", "<green>Open the shop to apply your shiny new price, or use /setprice again to cancel.");
+        messageSection.addDefault("applyDeposit", "<green>Open the shop to add additional funds, or use /setdeposit again to cancel.");
         messageSection.addDefault("setPriceCanceled", "<red>/setprice canceled");
         messageSection.addDefault("priceApplied", "<green>Price updated to <yellow><price>");
+        messageSection.addDefault("depositApplied", "<green>Deposit updated to <yellow><deposit>");
         messageSection.addDefault("collectRevenue", "<green>Collected <yellow><revenue></yellow> in sales from this shop");
         messageSection.addDefault("collectDeposit", "<green>Withdrew the <yellow><deposit></yellow> deposit from this shop");
         messageSection.addDefault("tooFar", "<red>You're too far away from this shop");
         messageSection.addDefault("noShopThere", "<red>This shop has been moved or destroyed");
         messageSection.addDefault("buyPrompt", "<green>How many <item> do you want? <yellow>(<available> available, <price> each)");
+        messageSection.addDefault("sellPrompt", "<green>How many <item> to sell? <yellow>(<available> available, <price> each)");
         messageSection.addDefault("shopCommand", """
                 Selling:
                 To create a shop, put items of the same type in a chest, and use /setprice to set the price per item.
