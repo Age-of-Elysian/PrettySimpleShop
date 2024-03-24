@@ -1,6 +1,6 @@
 package com.robomwm.prettysimpleshop.shop;
 
-import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -10,18 +10,18 @@ import org.bukkit.inventory.ItemStack;
  * @implNote Used to store info about a selected shop to compare to when performing a transaction
  */
 public abstract class ShopInfo {
-    private final Location location;
+    private final Block block;
     private final ItemStack item;
     private final double price;
 
-    public ShopInfo(Location location, ItemStack item, double price) {
-        this.location = location;
+    public ShopInfo(Block block, ItemStack item, double price) {
+        this.block = block;
         this.item = item;
         this.price = price;
     }
 
-    public Location getLocation() {
-        return location.clone();
+    public Block getBlock() {
+        return block;
     }
 
     public ItemStack getItem() {

@@ -97,7 +97,7 @@ public class BuyCommand implements CommandExecutor, Listener {
         }
 
         // TODO: make configurable
-        if (!shopInfo.getLocation().isChunkLoaded() || shopInfo.getLocation().distance(player.getLocation()) > 20) {
+        if (!shopInfo.getBlock().getLocation().isChunkLoaded() || shopInfo.getBlock().getLocation().distance(player.getLocation()) > 20) {
             config.sendComponent(player, "tooFar");
             return;
         }

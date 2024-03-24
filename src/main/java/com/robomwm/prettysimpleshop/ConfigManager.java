@@ -61,6 +61,7 @@ public class ConfigManager {
         messageSection.addDefault("setPriceCanceled", "<red>/setprice canceled");
         messageSection.addDefault("priceApplied", "<green>Price updated to <yellow><price>");
         messageSection.addDefault("collectRevenue", "<green>Collected <yellow><revenue></yellow> in sales from this shop");
+        messageSection.addDefault("collectDeposit", "<green>Withdrew the <yellow><deposit></yellow> deposit from this shop");
         messageSection.addDefault("tooFar", "<red>You're too far away from this shop");
         messageSection.addDefault("noShopThere", "<red>This shop has been moved or destroyed");
         messageSection.addDefault("buyPrompt", "<green>How many <item> do you want? <yellow>(<available> available, <price> each)");

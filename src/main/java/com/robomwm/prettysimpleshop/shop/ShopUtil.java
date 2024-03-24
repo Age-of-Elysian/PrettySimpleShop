@@ -3,7 +3,6 @@ package com.robomwm.prettysimpleshop.shop;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.Container;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.inventory.Inventory;
@@ -52,24 +51,40 @@ public class ShopUtil {
         return item;
     }
 
-    public static PersistentDataContainer getPriorityData(Container container) {
+    public static Location getMiddleLocation(Container container) {
+        if (container == null) {
+            return null;
+        }
+
+        return container.getInventory().getLocation();
+    }
+
+    public static Container getPriorityChest(DoubleChest doubleChest) {
+        Container left = (Container) doubleChest.getLeftSide(false);
+        Container right = (Container) doubleChest.getRightSide(false);
+
+        // left side takes precedence, but we'll override if the right side is a shop and the left side isn't
+        if (!isShop(left.getPersistentDataContainer()) && isShop(right.getPersistentDataContainer())) {
+            return right;
+        }
+
+        return left;
+    }
+
+    public static Container getPriorityContainer(Container container) {
         if (container == null) {
             return null;
         }
 
         if (container.getInventory().getHolder(false) instanceof DoubleChest doubleChest) {
-            Container left = (Container) doubleChest.getLeftSide(false);
-            Container right = (Container) doubleChest.getRightSide(false);
-
-            // left side takes precedence, but we'll override if the right side is a shop and the left side isn't
-            if (!isShop(left.getPersistentDataContainer()) && isShop(right.getPersistentDataContainer())) {
-                return right.getPersistentDataContainer();
-            }
-
-            return left.getPersistentDataContainer();
+            return getPriorityChest(doubleChest);
         }
 
-        return container.getPersistentDataContainer();
+        return container;
+    }
+
+    public static PersistentDataContainer getPriorityData(Container container) {
+        return getPriorityContainer(container).getPersistentDataContainer();
     }
 
     private static final NamespacedKey PRICE_KEY = new NamespacedKey("prettysimpleshop", "price");
@@ -105,7 +120,8 @@ public class ShopUtil {
     }
 
     public static ShopInfo getShopInfo(Container container) {
-        PersistentDataContainer data = getPriorityData(container);
+        Container priority = getPriorityContainer(container);
+        PersistentDataContainer data = priority.getPersistentDataContainer();
 
         if (!isShop(data)) {
             return null;
@@ -113,27 +129,10 @@ public class ShopUtil {
 
         // If shop is input
         if (data.has(DEPOSIT_KEY)) {
-            return new InputShopInfo(getLocation(container), getItemStack(container), getPrice(data), getDeposit(data));
+            return new InputShopInfo(priority.getBlock(), getItemStack(container), getPrice(data), getDeposit(data));
         }
 
-        return new OutputShopInfo(getLocation(container), getItemStack(container), getPrice(data), getRevenue(data));
-    }
-
-
-    /**
-     * Get the container at a given location.
-     * In the case of double chests, the
-     * left chest has a priority.
-     *
-     * @param location of container
-     * @return the block's state as a Container, or null if not a Nameable Container.
-     */
-    public static Container getContainer(Location location) {
-        BlockState state = location.getBlock().getState(false);
-        if (state instanceof Container container) {
-            return container;
-        }
-        return null;
+        return new OutputShopInfo(priority.getBlock(), getItemStack(container), getPrice(data), getRevenue(data));
     }
 
     /**
@@ -148,12 +147,8 @@ public class ShopUtil {
         return container.getInventory().getLocation();
     }
 
-
     public static ItemStack performTransaction(OutputShopInfo original, int amount) {
-        Container container = getContainer(original.getLocation());
-
-        // Shop might be destroyed
-        if (container == null) {
+        if (!(original.getBlock().getState(false) instanceof Container container)) {
             return null;
         }
 
@@ -162,12 +157,12 @@ public class ShopUtil {
         }
 
         // Check for price changes
-        if (current.getPrice() != original.getPrice()) {
+        if (original.getPrice() != current.getPrice()) {
             return null;
         }
 
         // Check for item changes
-        if (!current.getItem().isSimilar(original.getItem())) {
+        if (!original.getItem().isSimilar(current.getItem())) {
             return null;
         }
 

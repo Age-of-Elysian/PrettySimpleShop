@@ -123,8 +123,13 @@ public class ShowoffItem implements Listener {
 
     @EventHandler
     private void onShopBought(ShopTransactionEvent event) {
-        ShopInfo shopInfo = ShopUtil.getShopInfo(ShopUtil.getContainer(event.getShopInfo().getLocation()));
-        spawnItem(shopInfo);
+        if (event.getShopInfo().getBlock().getState(false) instanceof Container container) {
+            ShopInfo shopInfo = ShopUtil.getShopInfo(container);
+
+            if (shopInfo != null) {
+                spawnItem(shopInfo);
+            }
+        }
     }
 
     @EventHandler
@@ -139,11 +144,17 @@ public class ShowoffItem implements Listener {
 
     @EventHandler
     private void onShopBreak(ShopBreakEvent event) {
-        despawnItem(event.getShopInfo().getLocation().add(0.5, 1.15, 0.5));
+        if (event.getShopInfo().getBlock().getState(false) instanceof Container container) {
+            despawnItem(ShopUtil.getMiddleLocation(container).add(0.5, 1.15, 0.5));
+        }
     }
 
     private void spawnItem(ShopInfo shopInfo) {
-        Location location = shopInfo.getLocation().add(0.5, 1.15, 0.5);
+        if (!(shopInfo.getBlock().getState(false) instanceof Container container)) {
+            return;
+        }
+
+        Location location = ShopUtil.getMiddleLocation(container).add(0.5, 1.15, 0.5);
         despawnItem(location);
 
         ItemStack itemStack = shopInfo.getItem();

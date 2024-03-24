@@ -9,6 +9,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -22,6 +23,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -124,7 +126,9 @@ public class ShopListener implements Listener {
             return false;
         }
 
-        Container container = (Container) block.getState(false);
+        if (!(block.getState(false) instanceof Container container)) {
+            return false;
+        }
 
         ShopInfo shopInfo = ShopUtil.getShopInfo(container);
 
@@ -169,7 +173,15 @@ public class ShopListener implements Listener {
             return;
         }
 
-        if (!(event.getInventory().getHolder(false) instanceof Container container)) {
+        InventoryHolder holder = event.getInventory().getHolder(false);
+
+        Container container;
+
+        if (holder instanceof Container) {
+            container = (Container) holder;
+        } else if (holder instanceof DoubleChest doubleChest) {
+            container = ShopUtil.getPriorityChest(doubleChest);
+        } else {
             return;
         }
 
@@ -208,7 +220,15 @@ public class ShopListener implements Listener {
             return;
         }
 
-        Container container = (Container) block.getState(false);
+        if (!(block.getState(false) instanceof Container container)) {
+            return;
+        }
+
+        PersistentDataContainer data = container.getPersistentDataContainer();
+
+        if (!ShopUtil.isShop(data)) {
+            return;
+        }
 
         ShopInfo shopInfo = ShopUtil.getShopInfo(container);
 
@@ -216,20 +236,24 @@ public class ShopListener implements Listener {
             return;
         }
 
-        // FIXME: double chests?
-        Bukkit.getPluginManager().callEvent(new ShopBreakEvent(event.getPlayer(), shopInfo, event));
+        Player player = event.getPlayer();
 
-        PersistentDataContainer data = container.getPersistentDataContainer();
+        // FIXME: double chests?
+        Bukkit.getPluginManager().callEvent(new ShopBreakEvent(player, shopInfo, event));
+
         double revenue = ShopUtil.getRevenue(data);
-        ShopUtil.setRevenue(data, 0);
 
         if (revenue > 0) {
-            Player player = event.getPlayer();
             economy.depositPlayer(player, revenue);
             config.sendComponent(player, "collectRevenue", unparsed("revenue", economy.format(revenue)));
         }
 
-        // TODO: check deposit
+        double deposit = ShopUtil.getDeposit(data);
+
+        if (deposit > 0) {
+            economy.depositPlayer(player, deposit);
+            config.sendComponent(player, "collectDeposit", unparsed("deposit", economy.format(deposit)));
+        }
     }
 
     // Purely for calling the dumb event
@@ -239,7 +263,15 @@ public class ShopListener implements Listener {
             return;
         }
 
-        if (!(event.getInventory().getHolder(false) instanceof Container container)) {
+        InventoryHolder holder = event.getInventory().getHolder(false);
+
+        Container container;
+
+        if (holder instanceof Container) {
+            container = (Container) holder;
+        } else if (holder instanceof DoubleChest doubleChest) {
+            container = ShopUtil.getPriorityChest(doubleChest);
+        } else {
             return;
         }
 

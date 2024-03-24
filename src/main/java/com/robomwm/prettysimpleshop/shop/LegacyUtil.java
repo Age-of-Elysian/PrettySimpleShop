@@ -13,6 +13,11 @@ public class LegacyUtil {
         }
 
         String[] split = name.split(" ");
+
+        if (!split[0].equals("Price:")) {
+            return false;
+        }
+
         return split.length == 5 && split[4].startsWith("§§");
     }
 

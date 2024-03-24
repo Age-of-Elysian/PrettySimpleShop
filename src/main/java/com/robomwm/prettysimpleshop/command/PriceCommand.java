@@ -33,7 +33,7 @@ public class PriceCommand implements CommandExecutor {
         double price;
 
         try {
-            price = Math.floor(Double.parseDouble(args[0]) * 100) / 100;
+            price = Double.parseDouble(args[0]);
         } catch (Throwable rock) {
             shopListener.priceCommand(player, null);
             return false;
