@@ -29,7 +29,6 @@ import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -72,7 +71,7 @@ public class ShowoffItem implements Listener {
     }
 
     private void loadShopItemsInChunk(Chunk chunk) {
-        Collection<BlockState> states = chunk.getTileEntities(block -> config.isShopBlock(block.getType()), false);
+        BlockState[] states = chunk.getTileEntities(false);
 
         for (BlockState state : states) {
             if (!(state instanceof Container container)) {

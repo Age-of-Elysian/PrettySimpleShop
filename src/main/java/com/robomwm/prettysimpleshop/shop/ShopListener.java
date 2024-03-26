@@ -118,7 +118,7 @@ public class ShopListener implements Listener {
             return;
         }
 
-        if (event.getClickedBlock() != null && config.isShopBlock(event.getClickedBlock().getType())) {
+        if (event.getClickedBlock() != null) {
             return;
         }
 
@@ -126,10 +126,6 @@ public class ShopListener implements Listener {
     }
 
     public boolean selectShop(Player player, Block block) {
-        if (!config.isShopBlock(block.getType())) {
-            return false;
-        }
-
         if (!(block.getState(false) instanceof Container container)) {
             return false;
         }
@@ -242,10 +238,6 @@ public class ShopListener implements Listener {
     private void onBreakShop(BlockBreakEvent event) {
         Block block = event.getBlock();
 
-        if (!config.isShopBlock(block.getType())) {
-            return;
-        }
-
         if (!(block.getState(false) instanceof Container container)) {
             return;
         }
@@ -313,7 +305,7 @@ public class ShopListener implements Listener {
     //For now we'll just prevent explosions. Might consider dropping stored revenue on explosion later.
     @EventHandler(ignoreCancelled = true)
     private void onExplode(EntityExplodeEvent event) {
-        event.blockList().removeIf(block -> config.isShopBlock(block.getType()) && ShopUtil.isShop(((Container) block.getState(false)).getPersistentDataContainer()));
+        event.blockList().removeIf(block -> ShopUtil.isShop(((Container) block.getState(false)).getPersistentDataContainer()));
     }
 
     //Commands cuz well all the data's here so yea

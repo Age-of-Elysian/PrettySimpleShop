@@ -14,8 +14,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.persistence.PersistentDataContainer;
 
-import java.util.Collection;
-
 public class LegacyConversion implements Listener {
     private final ConfigManager config;
 
@@ -40,7 +38,7 @@ public class LegacyConversion implements Listener {
     }
 
     private void migrateLegacyShops(Chunk chunk) {
-        Collection<BlockState> states = chunk.getTileEntities(block -> config.isShopBlock(block.getType()), false);
+        BlockState[] states = chunk.getTileEntities(false);
 
         for (BlockState state : states) {
             if (!(state instanceof Container container)) {

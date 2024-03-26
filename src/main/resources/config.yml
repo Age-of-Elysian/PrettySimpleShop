@@ -1,0 +1,38 @@
+showOffItemsFeature:
+  enabled: true
+  showItemsName: true
+
+worldWhitelist:
+  - mall
+
+messages:
+  noPrice: "<red>This shop is not open for sale yet! <yellow>If you are the owner, use /setprice <price> to open this shop!"
+  noStock: "<red>This shop is out of stock!"
+  outOfDeposit: "<red>This shop is out of deposit! Tell the owner to add some deposit to the shop!"
+  noStockPlayer: "<red>You are out of stock!"
+  noMoney: "<red>Transaction canceled: Insufficient money. Try again with a smaller quantity?"
+  noShopSelected: "<red>Select a shop via left-clicking its chest."
+  shopModified: "<red>Transaction canceled: Shop was modified. Please try again."
+  shopFull: "<red>Transaction canceled: Shop is completely full. Try again later."
+  transactionCanceled: "<red>Transaction canceled."
+  buyCompleted: "<green>Bought <yellow><amount>x</yellow> <item> for <yellow><price>"
+  sellCompleted: "<green>Sold <yellow><amount>x</yellow> <item> for <yellow><price>"
+  applyPrice: "<green>Open the shop to apply your shiny new price, or use /setprice again to cancel."
+  applyDeposit: "<green>Open the shop to add additional funds, or use /setdeposit again to cancel."
+  setPriceCanceled: "<red>/setprice canceled"
+  priceApplied: "<green>Price updated to <yellow><price>"
+  depositApplied: "<green>Deposit updated to <yellow><deposit>"
+  collectRevenue: "<green>Collected <yellow><revenue></yellow> in sales from this shop"
+  collectDeposit: "<green>Withdrew the <yellow><deposit></yellow> deposit from this shop"
+  tooFar: "<red>You're too far away from this shop"
+  noShopThere: "<red>This shop has been moved or destroyed"
+  buyPrompt: "<green>How many <item> do you want? <yellow>(<available> available, <price> each)"
+  sellPrompt: "<green>How many <item> to sell? <yellow>(<available> available, <price> each)"
+  shopCommand: >
+    Selling:
+    To create a shop, put items of the same type in a chest, and use /setprice to set the price per item.
+    Buying:
+    Punch a shop to view the item. Hover over it in chat for item details.
+    Click the message, /psbuy, or double-punch a shop to buy from a shop
+  buyHologramFormat: "<item><newline>Buy <amount>x @ <price>"
+  sellHologramFormat: "<item><newline>Sell <amount>x @ <price>"
