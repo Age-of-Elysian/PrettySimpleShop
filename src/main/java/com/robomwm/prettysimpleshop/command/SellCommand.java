@@ -100,8 +100,8 @@ public class SellCommand implements CommandExecutor {
             return;
         }
 
-        if (shopInfo.getDeposit() < amount * shopInfo.getPrice()) {
-            config.sendComponent(player, "noMoney");
+        if (shopInfo.getDeposit() < shopInfo.getPrice()) {
+            config.sendComponent(player,"outOfDeposit");
             return;
         }
 

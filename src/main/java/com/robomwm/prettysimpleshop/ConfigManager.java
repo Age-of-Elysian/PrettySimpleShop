@@ -51,6 +51,7 @@ public class ConfigManager {
             messageSection = config.createSection("messages");
         messageSection.addDefault("noPrice", "<red>This shop is not open for sale yet! <yellow>If you are the owner, use /setprice <price> to open this shop!");
         messageSection.addDefault("noStock", "<red>This shop is out of stock!");
+        messageSection.addDefault("outOfDeposit", "<red>This shop is out of deposit! Tell the owner to add some deposit to the shop!");
         messageSection.addDefault("noStockPlayer", "<red>You are out of stock!");
         messageSection.addDefault("noMoney", "<red>Transaction canceled: Insufficient money. Try again with a smaller quantity?");
         messageSection.addDefault("noShopSelected", "<red>Select a shop via left-clicking its chest.");

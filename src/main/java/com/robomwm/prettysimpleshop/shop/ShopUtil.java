@@ -204,7 +204,7 @@ public class ShopUtil {
         }
 
         PersistentDataContainer data = getPriorityData(container);
-        int priced = Math.min(amount, (int) (current.getDeposit() / (amount * current.getPrice())));
+        int priced = Math.min(amount, (int) (current.getDeposit() / current.getPrice()));
 
         ItemStack overflow = container.getInventory().addItem(current.getItem().asQuantity(priced)).get(0);
 
