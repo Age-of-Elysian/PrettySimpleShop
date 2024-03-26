@@ -77,7 +77,8 @@ public class ConfigManager {
                 Punch a shop to view the item. Hover over it in chat for item details.
                 Click the message, /psbuy, or double-punch a shop to buy from a shop
                 """);
-        messageSection.addDefault("hologramFormat", "<item><newline><amount>x @ <price>");
+        messageSection.addDefault("buyHologramFormat", "<item><newline>Buy <amount>x @ <price>");
+        messageSection.addDefault("sellHologramFormat", "<item><newline>Sell <amount>x @ <price>");
 
         config.options().copyDefaults(true);
         plugin.saveConfig();

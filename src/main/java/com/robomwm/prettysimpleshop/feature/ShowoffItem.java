@@ -7,6 +7,8 @@ import com.robomwm.prettysimpleshop.event.ShopBreakEvent;
 import com.robomwm.prettysimpleshop.event.ShopCloseEvent;
 import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
 import com.robomwm.prettysimpleshop.event.ShopTransactionEvent;
+import com.robomwm.prettysimpleshop.shop.InputShopInfo;
+import com.robomwm.prettysimpleshop.shop.OutputShopInfo;
 import com.robomwm.prettysimpleshop.shop.ShopInfo;
 import com.robomwm.prettysimpleshop.shop.ShopUtil;
 import net.milkbowl.vault.economy.Economy;
@@ -172,14 +174,25 @@ public class ShowoffItem implements Listener {
 
         if (showItemName) {
             var text = location.getWorld().spawn(location, TextDisplay.class, displayText -> {
-                displayText.text(
-                        config.getComponent(
-                                "hologramFormat",
-                                component("item", ShopUtil.getItemName(itemStack)),
-                                unparsed("amount", Integer.toString(itemStack.getAmount())),
-                                unparsed("price", economy.format(shopInfo.getPrice()))
-                        )
-                );
+                if (shopInfo instanceof OutputShopInfo) {
+                    displayText.text(
+                            config.getComponent(
+                                    "buyHologramFormat",
+                                    component("item", ShopUtil.getItemName(itemStack)),
+                                    unparsed("amount", Integer.toString(itemStack.getAmount())),
+                                    unparsed("price", economy.format(shopInfo.getPrice()))
+                            )
+                    );
+                } else if (shopInfo instanceof InputShopInfo) {
+                    displayText.text(
+                            config.getComponent(
+                                    "sellHologramFormat",
+                                    component("item", ShopUtil.getItemName(itemStack)),
+                                    unparsed("amount", Integer.toString(itemStack.getAmount())),
+                                    unparsed("price", economy.format(shopInfo.getPrice()))
+                            )
+                    );
+                }
 
                 displayText.setBillboard(Display.Billboard.VERTICAL);
                 displayText.setTransformation(new Transformation(

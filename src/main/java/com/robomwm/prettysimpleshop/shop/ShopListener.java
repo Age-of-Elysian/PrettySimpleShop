@@ -207,6 +207,12 @@ public class ShopListener implements Listener {
             config.sendComponent(player, "priceApplied", unparsed("price", economy.format(price)));
         }
 
+        ShopInfo shopInfo = ShopUtil.getShopInfo(container);
+
+        if (shopInfo == null) {
+            return;
+        }
+
         if (depositSetter.containsKey(player.getUniqueId())) {
             double deposit = depositSetter.remove(player.getUniqueId());
 
@@ -217,12 +223,6 @@ public class ShopListener implements Listener {
             } else {
                 config.sendComponent(player, "noMoney");
             }
-        }
-
-        ShopInfo shopInfo = ShopUtil.getShopInfo(container);
-
-        if (shopInfo == null) {
-            return;
         }
 
         Bukkit.getPluginManager().callEvent(new ShopOpenEvent(player, shopInfo));
