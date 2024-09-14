@@ -1,4 +1,4 @@
-package com.robomwm.prettysimpleshop;
+package com.ageofelysian.prettysimpleshop;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;

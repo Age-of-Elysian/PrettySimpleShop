@@ -1,17 +1,11 @@
-package com.robomwm.prettysimpleshop.event;
+package com.ageofelysian.prettysimpleshop.event;
 
-import com.robomwm.prettysimpleshop.shop.ShopInfo;
+import com.ageofelysian.prettysimpleshop.shop.ShopInfo;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-/**
- * Created on 2/9/2018.
- *
- * @author RoboMWM
- */
-public class ShopSelectEvent extends Event {
-    // Custom Event Requirements
+public class ShopCloseEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
 
     public static HandlerList getHandlerList() {
@@ -26,7 +20,7 @@ public class ShopSelectEvent extends Event {
     private final Player player;
     private final ShopInfo shopInfo;
 
-    public ShopSelectEvent(Player player, ShopInfo shopInfo) {
+    public ShopCloseEvent(Player player, ShopInfo shopInfo) {
         this.player = player;
         this.shopInfo = shopInfo;
     }

@@ -1,6 +1,6 @@
-package com.robomwm.prettysimpleshop.event;
+package com.ageofelysian.prettysimpleshop.event;
 
-import com.robomwm.prettysimpleshop.shop.ShopInfo;
+import com.ageofelysian.prettysimpleshop.shop.ShopInfo;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;

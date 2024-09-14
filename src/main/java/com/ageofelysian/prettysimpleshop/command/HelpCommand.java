@@ -1,6 +1,6 @@
-package com.robomwm.prettysimpleshop.command;
+package com.ageofelysian.prettysimpleshop.command;
 
-import com.robomwm.prettysimpleshop.PrettySimpleShop;
+import com.ageofelysian.prettysimpleshop.PrettySimpleShop;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

@@ -1,4 +1,4 @@
-package com.robomwm.prettysimpleshop.shop;
+package com.ageofelysian.prettysimpleshop.shop;
 
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;

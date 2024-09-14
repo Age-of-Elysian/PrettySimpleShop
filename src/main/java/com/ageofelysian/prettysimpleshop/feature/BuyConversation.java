@@ -1,10 +1,10 @@
-package com.robomwm.prettysimpleshop.feature;
+package com.ageofelysian.prettysimpleshop.feature;
 
-import com.robomwm.prettysimpleshop.PrettySimpleShop;
-import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
-import com.robomwm.prettysimpleshop.shop.InputShopInfo;
-import com.robomwm.prettysimpleshop.shop.OutputShopInfo;
-import com.robomwm.prettysimpleshop.shop.ShopInfo;
+import com.ageofelysian.prettysimpleshop.PrettySimpleShop;
+import com.ageofelysian.prettysimpleshop.event.ShopSelectEvent;
+import com.ageofelysian.prettysimpleshop.shop.InputShopInfo;
+import com.ageofelysian.prettysimpleshop.shop.OutputShopInfo;
+import com.ageofelysian.prettysimpleshop.shop.ShopInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

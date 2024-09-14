@@ -1,11 +1,11 @@
-package com.robomwm.prettysimpleshop.command;
+package com.ageofelysian.prettysimpleshop.command;
 
-import com.robomwm.prettysimpleshop.ConfigManager;
-import com.robomwm.prettysimpleshop.PrettySimpleShop;
-import com.robomwm.prettysimpleshop.event.ShopTransactionEvent;
-import com.robomwm.prettysimpleshop.shop.OutputShopInfo;
-import com.robomwm.prettysimpleshop.shop.ShopListener;
-import com.robomwm.prettysimpleshop.shop.ShopUtil;
+import com.ageofelysian.prettysimpleshop.ConfigManager;
+import com.ageofelysian.prettysimpleshop.PrettySimpleShop;
+import com.ageofelysian.prettysimpleshop.event.ShopTransactionEvent;
+import com.ageofelysian.prettysimpleshop.shop.InputShopInfo;
+import com.ageofelysian.prettysimpleshop.shop.ShopListener;
+import com.ageofelysian.prettysimpleshop.shop.ShopUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -19,17 +19,12 @@ import org.jetbrains.annotations.NotNull;
 import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.component;
 import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unparsed;
 
-/**
- * Created on 2/8/2018.
- *
- * @author RoboMWM
- */
-public class BuyCommand implements CommandExecutor {
+public class SellCommand implements CommandExecutor {
     private final PrettySimpleShop plugin;
     private final ShopListener shopListener;
     private final ConfigManager config;
 
-    public BuyCommand(PrettySimpleShop plugin, ShopListener shopListener) {
+    public SellCommand(PrettySimpleShop plugin, ShopListener shopListener) {
         this.plugin = plugin;
         this.shopListener = shopListener;
         this.config = plugin.getConfigManager();
@@ -84,12 +79,12 @@ public class BuyCommand implements CommandExecutor {
             return false;
         }
 
-        buyCommand(player, quantity);
+        sellCommand(player, quantity);
         return true;
     }
 
-    public void buyCommand(Player player, int amount) {
-        if (!(shopListener.getSelectedShop(player) instanceof OutputShopInfo shopInfo)) {
+    public void sellCommand(Player player, int amount) {
+        if (!(shopListener.getSelectedShop(player) instanceof InputShopInfo shopInfo)) {
             config.sendComponent(player, "noShopSelected");
             return;
         }
@@ -105,39 +100,53 @@ public class BuyCommand implements CommandExecutor {
             return;
         }
 
-        if (plugin.getEconomy().getBalance(player) < amount * shopInfo.getPrice()) {
-            config.sendComponent(player, "noMoney");
+        if (shopInfo.getDeposit() < shopInfo.getPrice()) {
+            config.sendComponent(player,"outOfDeposit");
             return;
         }
 
-        ItemStack output = ShopUtil.performTransaction(shopInfo, amount);
+        int containing = 0;
 
-        if (output == null) {
+        for (ItemStack item : player.getInventory()) {
+            if (item == null || item.getType().isAir()) {
+                continue;
+            }
+
+            if (item.isSimilar(shopInfo.getItem())) {
+                containing += item.getAmount();
+            }
+        }
+
+        amount = Math.min(amount, containing);
+
+        if (amount == 0) {
+            config.sendComponent(player, "noStockPlayer");
+            return;
+        }
+
+        int output = ShopUtil.performTransaction(shopInfo, amount);
+
+        if (output == -1) {
             config.sendComponent(player, "shopModified");
             return;
         }
 
-        plugin.getEconomy().withdrawPlayer(player, output.getAmount() * shopInfo.getPrice());
+        if (output == 0) {
+            config.sendComponent(player, "shopFull");
+            return;
+        }
 
-        Bukkit.getPluginManager().callEvent(new ShopTransactionEvent(player, shopInfo, output.getAmount()));
+        player.getInventory().removeItemAnySlot(shopInfo.getItem().asQuantity(output));
+        plugin.getEconomy().depositPlayer(player, output * shopInfo.getPrice());
+
+        Bukkit.getPluginManager().callEvent(new ShopTransactionEvent(player, shopInfo, output));
 
         config.sendComponent(
                 player,
-                "buyCompleted",
-                component("item", output.displayName()),
-                unparsed("amount", Integer.toString(output.getAmount())),
-                unparsed("price", plugin.getEconomy().format(output.getAmount() * shopInfo.getPrice()))
+                "sellCompleted",
+                component("item", shopInfo.getItem().displayName()),
+                unparsed("amount", Integer.toString(output)),
+                unparsed("price", plugin.getEconomy().format(output * shopInfo.getPrice()))
         );
-
-        while (output.getAmount() > 0) {
-            int quantity = Math.min(output.getAmount(), output.getMaxStackSize());
-
-            player.getWorld().dropItem(player.getLocation(), output.asQuantity(quantity), item -> {
-                item.setOwner(player.getUniqueId());
-                item.setPickupDelay(0);
-            });
-
-            output.subtract(quantity);
-        }
     }
 }

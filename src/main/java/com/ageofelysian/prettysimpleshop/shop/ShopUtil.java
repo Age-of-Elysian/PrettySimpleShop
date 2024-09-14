@@ -1,4 +1,4 @@
-package com.robomwm.prettysimpleshop.shop;
+package com.ageofelysian.prettysimpleshop.shop;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;

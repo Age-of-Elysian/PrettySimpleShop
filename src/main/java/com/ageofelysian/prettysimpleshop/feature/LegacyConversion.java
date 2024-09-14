@@ -1,9 +1,9 @@
-package com.robomwm.prettysimpleshop.feature;
+package com.ageofelysian.prettysimpleshop.feature;
 
-import com.robomwm.prettysimpleshop.ConfigManager;
-import com.robomwm.prettysimpleshop.PrettySimpleShop;
-import com.robomwm.prettysimpleshop.shop.LegacyUtil;
-import com.robomwm.prettysimpleshop.shop.ShopUtil;
+import com.ageofelysian.prettysimpleshop.ConfigManager;
+import com.ageofelysian.prettysimpleshop.PrettySimpleShop;
+import com.ageofelysian.prettysimpleshop.shop.LegacyUtil;
+import com.ageofelysian.prettysimpleshop.shop.ShopUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;

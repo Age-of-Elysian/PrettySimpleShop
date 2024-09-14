@@ -1,16 +1,16 @@
-package com.robomwm.prettysimpleshop.feature;
+package com.ageofelysian.prettysimpleshop.feature;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
-import com.robomwm.prettysimpleshop.ConfigManager;
-import com.robomwm.prettysimpleshop.PrettySimpleShop;
-import com.robomwm.prettysimpleshop.event.ShopBreakEvent;
-import com.robomwm.prettysimpleshop.event.ShopCloseEvent;
-import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
-import com.robomwm.prettysimpleshop.event.ShopTransactionEvent;
-import com.robomwm.prettysimpleshop.shop.InputShopInfo;
-import com.robomwm.prettysimpleshop.shop.OutputShopInfo;
-import com.robomwm.prettysimpleshop.shop.ShopInfo;
-import com.robomwm.prettysimpleshop.shop.ShopUtil;
+import com.ageofelysian.prettysimpleshop.ConfigManager;
+import com.ageofelysian.prettysimpleshop.PrettySimpleShop;
+import com.ageofelysian.prettysimpleshop.event.ShopBreakEvent;
+import com.ageofelysian.prettysimpleshop.event.ShopCloseEvent;
+import com.ageofelysian.prettysimpleshop.event.ShopSelectEvent;
+import com.ageofelysian.prettysimpleshop.event.ShopTransactionEvent;
+import com.ageofelysian.prettysimpleshop.shop.InputShopInfo;
+import com.ageofelysian.prettysimpleshop.shop.OutputShopInfo;
+import com.ageofelysian.prettysimpleshop.shop.ShopInfo;
+import com.ageofelysian.prettysimpleshop.shop.ShopUtil;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.*;
 import org.bukkit.block.*;

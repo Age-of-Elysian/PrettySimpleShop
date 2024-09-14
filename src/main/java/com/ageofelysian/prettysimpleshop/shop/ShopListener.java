@@ -1,10 +1,10 @@
-package com.robomwm.prettysimpleshop.shop;
+package com.ageofelysian.prettysimpleshop.shop;
 
-import com.robomwm.prettysimpleshop.ConfigManager;
-import com.robomwm.prettysimpleshop.event.ShopBreakEvent;
-import com.robomwm.prettysimpleshop.event.ShopCloseEvent;
-import com.robomwm.prettysimpleshop.event.ShopOpenEvent;
-import com.robomwm.prettysimpleshop.event.ShopSelectEvent;
+import com.ageofelysian.prettysimpleshop.ConfigManager;
+import com.ageofelysian.prettysimpleshop.event.ShopBreakEvent;
+import com.ageofelysian.prettysimpleshop.event.ShopCloseEvent;
+import com.ageofelysian.prettysimpleshop.event.ShopOpenEvent;
+import com.ageofelysian.prettysimpleshop.event.ShopSelectEvent;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
