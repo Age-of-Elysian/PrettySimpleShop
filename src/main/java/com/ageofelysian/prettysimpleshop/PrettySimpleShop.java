@@ -4,7 +4,6 @@ import com.ageofelysian.prettysimpleshop.command.*;
 import com.ageofelysian.prettysimpleshop.feature.BuyConversation;
 import com.ageofelysian.prettysimpleshop.feature.LegacyConversion;
 import com.ageofelysian.prettysimpleshop.feature.ShowoffItem;
-import com.robomwm.prettysimpleshop.command.*;
 import com.ageofelysian.prettysimpleshop.shop.ShopListener;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;

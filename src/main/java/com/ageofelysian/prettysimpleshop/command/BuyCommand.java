@@ -124,7 +124,7 @@ public class BuyCommand implements CommandExecutor {
         config.sendComponent(
                 player,
                 "buyCompleted",
-                component("item", output.displayName()),
+                component("item", output.asOne().displayName()),
                 unparsed("amount", Integer.toString(output.getAmount())),
                 unparsed("price", plugin.getEconomy().format(output.getAmount() * shopInfo.getPrice()))
         );

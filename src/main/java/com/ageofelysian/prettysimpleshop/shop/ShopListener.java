@@ -154,7 +154,7 @@ public class ShopListener implements Listener {
             config.sendComponent(
                     player,
                     "buyPrompt",
-                    component("item", shopInfo.getItem().displayName()),
+                    component("item", shopInfo.getItem().asOne().displayName()),
                     unparsed("price", economy.format(shopInfo.getPrice())),
                     unparsed("available", Integer.toString(shopInfo.getItem().getAmount()))
             );
@@ -162,7 +162,7 @@ public class ShopListener implements Listener {
             config.sendComponent(
                     player,
                     "sellPrompt",
-                    component("item", shopInfo.getItem().displayName()),
+                    component("item", shopInfo.getItem().asOne().displayName()),
                     unparsed("price", economy.format(shopInfo.getPrice())),
                     unparsed("available", Integer.toString(shopInfo.getItem().getAmount()))
             );

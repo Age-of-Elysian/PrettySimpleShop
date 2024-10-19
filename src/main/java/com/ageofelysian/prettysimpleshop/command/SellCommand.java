@@ -144,7 +144,7 @@ public class SellCommand implements CommandExecutor {
         config.sendComponent(
                 player,
                 "sellCompleted",
-                component("item", shopInfo.getItem().displayName()),
+                component("item", shopInfo.getItem().asOne().displayName()),
                 unparsed("amount", Integer.toString(output)),
                 unparsed("price", plugin.getEconomy().format(output * shopInfo.getPrice()))
         );
